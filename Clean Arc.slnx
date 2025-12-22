@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Clean Arc/CleanArc.csproj" />
+  <Project Path="CleanArc.Core/CleanArc.Core.csproj" />
+  <Project Path="CleanArc.Infrastructure/CleanArc.Infrastructure.csproj" />
+  <Project Path="CleanArc.Services/CleanArc.Services.csproj" />
+</Solution>

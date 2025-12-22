@@ -1,0 +1,6 @@
+@Clean_Arc_HostAddress = http://localhost:5283
+
+GET {{Clean_Arc_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
