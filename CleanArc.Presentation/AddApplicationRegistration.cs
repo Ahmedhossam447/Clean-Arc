@@ -1,0 +1,20 @@
+﻿using Clean_Arc.Pipline_Behaviour;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using FluentValidation;
+using huzcodes.Extensions.Exceptions;
+
+namespace CleanArc.Application
+{
+    public static class AddApplicationRegistration
+    {
+        public static void AddPresentationRegistration(this IServiceCollection services)
+        {
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AddApplicationRegistration).Assembly));
+            services.AddFluentValidation(typeof(AddApplicationRegistration));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestPipline<,>));
+
+
+        }
+    }
+}

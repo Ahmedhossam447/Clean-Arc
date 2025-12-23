@@ -1,9 +1,10 @@
 using CleanArc.Infrastructure;
 using CleanArc.Infrastructure.Persistence.Data;
 using CleanArc.Services;
+using huzcodes.Extensions.Exceptions;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System;
+using CleanArc.Application;
 
 namespace Clean_Arc
 {
@@ -17,6 +18,9 @@ namespace Clean_Arc
 
             builder.Services.AddControllers();
             builder.Services.AddInfrastructureServices(builder.Configuration);
+            builder.Services.AddPresentationRegistration();
+
+
             builder.Services.AddServices();
             builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -30,7 +34,7 @@ namespace Clean_Arc
             {
                 app.MapOpenApi();
             }
-
+            app.AddExceptionHandlerExtension();
             app.UseHttpsRedirection();
 
             app.UseAuthorization();

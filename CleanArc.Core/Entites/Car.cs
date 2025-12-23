@@ -6,12 +6,12 @@ namespace CleanArc.Core.Entites
 {
     public class Car
     {
-        int Id { get; set; }
-        string?  Make { get; set; }
-        string? Model { get; set; }
-        int Year { get; set; }
-        string? Color { get; set; }
-        string? LicensePlate { get; set; }
+       public int Id { get; set; }
+       public string?  Make { get; set; }
+       public string? Model { get; set; }
+       public int Year { get; set; }
+       public string? Color { get; set; }
+       public string? LicensePlate { get; set; }
 
     }
 }

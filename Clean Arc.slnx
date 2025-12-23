@@ -1,6 +1,13 @@
 <Solution>
-  <Project Path="Clean Arc/CleanArc.csproj" />
-  <Project Path="CleanArc.Core/CleanArc.Core.csproj" />
-  <Project Path="CleanArc.Infrastructure/CleanArc.Infrastructure.csproj" />
-  <Project Path="CleanArc.Services/CleanArc.Services.csproj" />
+  <Folder Name="/Domain/">
+    <Project Path="CleanArc.Core/CleanArc.Core.csproj" />
+    <Project Path="CleanArc.Services/CleanArc.Services.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="CleanArc.Infrastructure/CleanArc.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Presentation/">
+    <Project Path="Clean Arc/CleanArc.csproj" />
+    <Project Path="CleanArc.Presentation/CleanArc.Application.csproj" Id="dce6b8d8-e0fb-4e0e-9e5e-fc640ee9c29f" />
+  </Folder>
 </Solution>
