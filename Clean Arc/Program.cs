@@ -1,10 +1,11 @@
+using CleanArc.Application;
 using CleanArc.Infrastructure;
 using CleanArc.Infrastructure.Persistence.Data;
 using CleanArc.Services;
 using huzcodes.Extensions.Exceptions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using CleanArc.Application;
 
 namespace Clean_Arc
 {
@@ -26,6 +27,7 @@ namespace Clean_Arc
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+            builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
@@ -34,6 +36,13 @@ namespace Clean_Arc
             {
                 app.MapOpenApi();
             }
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "CleanARC API V1");
+                c.RoutePrefix = "swagger"; // Swagger UI will be available at /swagger
+                c.DisplayRequestDuration();
+            });
             app.AddExceptionHandlerExtension();
             app.UseHttpsRedirection();
 

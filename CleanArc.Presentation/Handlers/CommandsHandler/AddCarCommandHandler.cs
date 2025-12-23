@@ -2,10 +2,6 @@
 using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using MediatR;
-using MediatR.Pipeline;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CleanArc.Application.Handlers.CommandsHandler
 {
