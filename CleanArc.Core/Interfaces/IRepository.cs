@@ -6,11 +6,13 @@ namespace CleanArc.Core.Interfaces
 {
     public interface IRepository<TEntity> where TEntity : class
     {
-        Task<IEnumerable<TEntity>> GetAll();
-        Task<TEntity> GetById(int id);
-        Task<TEntity> Add(TEntity entity);
+        Task<IEnumerable<TEntity>> GetAllAsync();
+        Task<IEnumerable<TEntity>> GetAsync(Func<TEntity, bool> predicate);
+        Task<TEntity> GetByIdAsync(int id);
+        Task<TEntity> AddAsync(TEntity entity);
         void Update(TEntity entity);
         void Delete(int id);
         int SaveChanges();
+        Task SaveChangesAsync();
     }
 }

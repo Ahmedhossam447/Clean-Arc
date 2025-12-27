@@ -1,5 +1,4 @@
 ﻿using CleanArc.Core.Interfaces;
-using CleanArc.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CleanArc.Services
@@ -8,7 +7,7 @@ namespace CleanArc.Services
     {
         public static void AddServices(this IServiceCollection services)
         {
-            services.AddScoped<ICarServices, CarServices>();
+            services.AddScoped<IAnimalServices, AnimalServices>();
         }
     }
 }

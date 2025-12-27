@@ -1,10 +1,7 @@
 using CleanArc.Application;
 using CleanArc.Infrastructure;
-using CleanArc.Infrastructure.Persistence.Data;
 using CleanArc.Services;
 using huzcodes.Extensions.Exceptions;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace Clean_Arc
@@ -18,13 +15,12 @@ namespace Clean_Arc
             // Add services to the container.
 
             builder.Services.AddControllers();
-            builder.Services.AddInfrastructureServices(builder.Configuration);
+            var connection = builder.Configuration.GetSection("ConnectionStrings:AnimalConnection").Value;
+            builder.Services.AddInfrastructureServices(connection);
             builder.Services.AddPresentationRegistration();
 
 
             builder.Services.AddServices();
-            builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen();

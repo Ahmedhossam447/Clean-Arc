@@ -17,17 +17,17 @@ namespace CleanArc.Infrastructure.Persistence
             _dbSet = _context.Set<TEntity>();
 
         }
-        public async Task<TEntity> Add(TEntity entity)
+        public async Task<TEntity> AddAsync(TEntity entity)
         {
             await _dbSet.AddAsync(entity);
             return entity;
         }
-        public async Task<IEnumerable<TEntity>> GetAll()
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();
         }
 
-        public async Task<TEntity> GetById(int id)
+        public async Task<TEntity> GetByIdAsync(int id)
         {
             return await _dbSet.FindAsync(id);
         }
@@ -47,6 +47,14 @@ namespace CleanArc.Infrastructure.Persistence
         public int SaveChanges()
         {
           return _context.SaveChanges();
+        }
+        public async Task<IEnumerable<TEntity>> GetAsync(Func<TEntity, bool> predicate)
+        {
+            return await Task.Run(() => _dbSet.AsQueryable().Where(predicate));
+        }
+        public async Task SaveChangesAsync()
+        {
+            await  _context.SaveChangesAsync();
         }
     }
 }

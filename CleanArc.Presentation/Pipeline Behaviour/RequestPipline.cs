@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 
-namespace Clean_Arc.Pipline_Behaviour
+namespace Clean_Arc.Application.Pipline_Behaviour
 
 {
     public class RequestPipline<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
