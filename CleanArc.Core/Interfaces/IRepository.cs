@@ -11,7 +11,7 @@ namespace CleanArc.Core.Interfaces
         Task<TEntity> GetByIdAsync(int id);
         Task<TEntity> AddAsync(TEntity entity);
         void Update(TEntity entity);
-        void Delete(int id);
+        Task Delete(int id);
         int SaveChanges();
         Task SaveChangesAsync();
     }

@@ -14,8 +14,6 @@
 
   <ItemGroup>
     <Folder Include="Contracts\Requests\Animal\" />
-    <Folder Include="Handlers\QueriesHandler\" />
-    <Folder Include="Queries\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -36,9 +36,9 @@ namespace CleanArc.Infrastructure.Persistence
         {
             _dbSet.Update(entity);
         }
-        public async void Delete(int id)
+        public async Task Delete(int id)
         {
-            var Data =await _dbSet.FindAsync(id);
+            var Data = await _dbSet.FindAsync(id);
             if (Data != null)
             {
                 _dbSet.Remove(Data);

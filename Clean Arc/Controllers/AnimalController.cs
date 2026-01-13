@@ -1,7 +1,7 @@
 ﻿using CleanArc.Application.Commands;
 using CleanArc.Application.Contracts.Responses.Animal;
+using CleanArc.Application.Queries;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Clean_Arc.Controllers
@@ -19,6 +19,41 @@ namespace Clean_Arc.Controllers
         public async Task<ActionResult<CreateAnimalResponse>> CreateAnimal([FromBody] CreateAnimalCommand command)
         {
             var result = await _mediator.Send(command);
+            return result;
+        }
+        [HttpPut("{id}")]
+        public async Task<ActionResult<UpdateAnimalResponse>> UpdateAnimal(int id, [FromBody] UpdateAnimalCommand command)
+        {
+            command.AnimalId = id;
+            var result = await _mediator.Send(command);
+            return result;
+        }
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<DeleteAnimalResponse>> DeleteAnimal([FromRoute] int id)
+        {
+            var command = new DeleteAnimalCommand { AnimalId = id };
+            var result = await _mediator.Send(command);
+            return result;
+        }
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<ReadAnimalResponse>> GetAnimalById([FromRoute] int id)
+        {
+            var query = new GetAnimalByIdQuery { AnimalId = id };
+            var result = await _mediator.Send(query);
+            return result;
+        }
+        [HttpGet("Available/{userId:guid}")]
+        public async Task<ActionResult<GetAvailableAnimalsForAdoptionResponse>> GetAvailableAnimalsForAdoption([FromRoute] string userId)
+        {
+            var query = new GetAvailableAnimalsForAdoptionQuery { UserId = userId };
+            var result = await _mediator.Send(query);
+            return result;
+        }
+        [HttpGet]
+        public async Task<ActionResult<GetAllAnimalsResponse>> GetAllAnimals()
+        {
+            var query = new GetAllAnimalsQuery();
+            var result = await _mediator.Send(query);
             return result;
         }
 
