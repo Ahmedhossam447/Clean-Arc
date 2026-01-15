@@ -3,6 +3,7 @@ using CleanArc.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace CleanArc.Infrastructure.Persistence
@@ -48,7 +49,7 @@ namespace CleanArc.Infrastructure.Persistence
         {
           return _context.SaveChanges();
         }
-        public async Task<IEnumerable<TEntity>> GetAsync(Func<TEntity, bool> predicate)
+        public async Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await Task.Run(() => _dbSet.AsQueryable().Where(predicate));
         }

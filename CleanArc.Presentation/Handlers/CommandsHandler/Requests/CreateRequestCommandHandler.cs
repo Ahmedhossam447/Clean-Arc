@@ -30,6 +30,10 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
             {
                 throw new InvalidOperationException("This animal has already been adopted");
             }
+            if (animal.Userid != command.Useridreq)
+            {
+                throw new InvalidOperationException("the request has to be to the animal owner");
+            }
 
             var request = new Request
             {
@@ -38,6 +42,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
                 AnimalId = command.AnimalId,
                 Status = "Pending"
             };
+            
 
             await _requestRepository.AddAsync(request);
             await _requestRepository.SaveChangesAsync();

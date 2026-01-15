@@ -9,6 +9,6 @@ namespace CleanArc.Core.Interfaces
     public interface IAuthService
     {
         public Task<(bool Succeeded, string[] Errors)> RegisterUserAsync(string username, string password,string email);
-        public Task<ApplicationUser> LoginUserAsync(string email, string password);
+        public Task<ApplicationUser?> LoginUserAsync(string email, string password);
     }
 }

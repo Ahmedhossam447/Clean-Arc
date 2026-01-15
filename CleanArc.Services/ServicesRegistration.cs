@@ -10,6 +10,7 @@ namespace CleanArc.Services
             services.AddScoped<IAnimalServices, AnimalServices>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IEmailService, EmailService>();
         }
     }
 }

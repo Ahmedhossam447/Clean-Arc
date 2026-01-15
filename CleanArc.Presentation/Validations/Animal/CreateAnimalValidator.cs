@@ -21,8 +21,8 @@ namespace CleanArc.Application.Validations.Animal
             RuleFor(x => x.Gender)
                 .NotEmpty().WithMessage("Gender is required.");
             RuleFor(x => x.About).MaximumLength(500).WithMessage("About cannot exceed 500 characters.");
-            //RuleFor(x => x.Userid)
-              //  .NotEmpty().WithMessage("User ID is required.");
+            RuleFor(x => x.Userid)
+                .NotEmpty().WithMessage("User ID is required.");
               RuleFor(x => x.Photo)
                 .MaximumLength(2000).WithMessage("Photo URL cannot exceed 2000 characters.")
                 .NotEmpty().WithMessage("photo is required");

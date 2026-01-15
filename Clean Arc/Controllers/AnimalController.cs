@@ -1,10 +1,11 @@
-﻿using CleanArc.Application.Commands;
-using CleanArc.Application.Commands.Animal;
+﻿using CleanArc.Application.Commands.Animal;
 using CleanArc.Application.Contracts.Responses.Animal;
-using CleanArc.Application.Queries;
 using CleanArc.Application.Queries.Animal;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Clean_Arc.Controllers
 {
@@ -17,12 +18,14 @@ namespace Clean_Arc.Controllers
         {
             _mediator = mediator;
         }
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<CreateAnimalResponse>> CreateAnimal([FromBody] CreateAnimalCommand command)
         {
             var result = await _mediator.Send(command);
             return result;
         }
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<ActionResult<UpdateAnimalResponse>> UpdateAnimal(int id, [FromBody] UpdateAnimalCommand command)
         {
@@ -30,6 +33,7 @@ namespace Clean_Arc.Controllers
             var result = await _mediator.Send(command);
             return result;
         }
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult<DeleteAnimalResponse>> DeleteAnimal([FromRoute] int id)
         {
@@ -58,6 +62,21 @@ namespace Clean_Arc.Controllers
             var result = await _mediator.Send(query);
             return result;
         }
+        [Authorize]
+        [HttpPost("{animalid}/Adopt")]
+
+        public async Task<ActionResult<AdoptAnimalResponse>> AdoptAnimal([FromRoute]int animalid)
+        {
+            var adopterid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (adopterid == null) return Unauthorized();
+            var command = new AdoptAnimalCommand
+            {
+                AnimalId = animalid,
+                AdopterId = adopterid
+            };
+            return Ok(await _mediator.Send(command));
+        }
+
 
     }
 }
