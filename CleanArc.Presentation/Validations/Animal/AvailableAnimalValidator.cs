@@ -1,10 +1,10 @@
-﻿using CleanArc.Application.Queries;
+﻿using CleanArc.Application.Queries.Animal;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CleanArc.Application.Validations
+namespace CleanArc.Application.Validations.Animal
 {
     public class AvailableAnimalValidator : AbstractValidator<GetAvailableAnimalsForAdoptionQuery>
     {

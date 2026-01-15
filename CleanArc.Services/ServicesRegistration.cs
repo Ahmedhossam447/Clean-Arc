@@ -8,6 +8,8 @@ namespace CleanArc.Services
         public static void AddServices(this IServiceCollection services)
         {
             services.AddScoped<IAnimalServices, AnimalServices>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ITokenService, TokenService>();
         }
     }
 }

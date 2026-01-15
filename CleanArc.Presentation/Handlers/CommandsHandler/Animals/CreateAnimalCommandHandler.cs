@@ -1,21 +1,21 @@
-﻿using CleanArc.Application.Commands;
+﻿using CleanArc.Application.Commands.Animal;
 using CleanArc.Application.Contracts.Responses.Animal;
 using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using MediatR;
 
-namespace CleanArc.Application.Handlers.CommandsHandler
+namespace CleanArc.Application.Handlers.CommandsHandler.Animals
 {
     public class CreateAnimalCommandHandler : IRequestHandler<CreateAnimalCommand, CreateAnimalResponse>
     {
-        private readonly IRepository<Animal> _animalRepository;
-        public CreateAnimalCommandHandler(IRepository<Animal> animalRepository)
+        private readonly IRepository<Core.Entites.Animal> _animalRepository;
+        public CreateAnimalCommandHandler(IRepository<Core.Entites.Animal> animalRepository)
         {
             _animalRepository = animalRepository;
         }
         public async Task<CreateAnimalResponse> Handle(CreateAnimalCommand request, CancellationToken cancellationToken)
         {
-            var animal = new Animal
+            var animal = new Core.Entites.Animal
             {
                 Name = request.Name,
                 Age = request.Age,

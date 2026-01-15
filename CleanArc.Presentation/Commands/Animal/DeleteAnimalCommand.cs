@@ -2,7 +2,7 @@
 using MediatR;
 using System.Text.Json.Serialization;
 
-namespace CleanArc.Application.Commands
+namespace CleanArc.Application.Commands.Animal
 {
     public class DeleteAnimalCommand: IRequest<DeleteAnimalResponse>
     {

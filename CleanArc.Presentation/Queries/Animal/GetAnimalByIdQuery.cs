@@ -2,7 +2,7 @@ using CleanArc.Application.Contracts.Responses.Animal;
 using MediatR;
 using System.Text.Json.Serialization;
 
-namespace CleanArc.Application.Queries
+namespace CleanArc.Application.Queries.Animal
 {
     public class GetAnimalByIdQuery : IRequest<ReadAnimalResponse>
     {

@@ -1,10 +1,10 @@
-﻿using CleanArc.Application.Commands;
+﻿using CleanArc.Application.Commands.Animal;
 using CleanArc.Application.Contracts.Responses.Animal;
 using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using MediatR;
 
-namespace CleanArc.Application.Handlers.CommandsHandler
+namespace CleanArc.Application.Handlers.CommandsHandler.Animals
 {
     public class UpdateAnimalCommandHandler : IRequestHandler<UpdateAnimalCommand, UpdateAnimalResponse>
     {

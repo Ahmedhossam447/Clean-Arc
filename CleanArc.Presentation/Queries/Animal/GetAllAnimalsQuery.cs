@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CleanArc.Application.Queries
+namespace CleanArc.Application.Queries.Animal
 {
     public class GetAllAnimalsQuery:IRequest<GetAllAnimalsResponse>
     {

@@ -1,5 +1,5 @@
 ﻿using CleanArc.Application.Contracts.Responses.Animal;
-using CleanArc.Application.Queries;
+using CleanArc.Application.Queries.Animal;
 using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using MediatR;

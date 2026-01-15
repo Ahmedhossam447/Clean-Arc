@@ -1,7 +1,7 @@
 ﻿using CleanArc.Application.Contracts.Responses.Animal;
 using MediatR;
 
-namespace CleanArc.Application.Commands
+namespace CleanArc.Application.Commands.Animal
 {
     public class CreateAnimalCommand :IRequest<CreateAnimalResponse>
     {

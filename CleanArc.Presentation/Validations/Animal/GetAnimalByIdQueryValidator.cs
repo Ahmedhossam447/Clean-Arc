@@ -1,7 +1,7 @@
-using CleanArc.Application.Queries;
+using CleanArc.Application.Queries.Animal;
 using FluentValidation;
 
-namespace CleanArc.Application.Validations
+namespace CleanArc.Application.Validations.Animal
 {
     public class GetAnimalByIdQueryValidator : AbstractValidator<GetAnimalByIdQuery>
     {

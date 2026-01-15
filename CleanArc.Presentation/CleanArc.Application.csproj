@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Commands\Request\" />
     <Folder Include="Contracts\Requests\Animal\" />
   </ItemGroup>
 

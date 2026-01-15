@@ -16,7 +16,7 @@ namespace Clean_Arc
 
             builder.Services.AddControllers();
             var connection = builder.Configuration.GetSection("ConnectionStrings:AnimalConnection").Value;
-            builder.Services.AddInfrastructureServices(connection);
+            builder.Services.AddInfrastructureServices(connection,builder.Configuration);
             builder.Services.AddPresentationRegistration();
 
 
@@ -41,7 +41,7 @@ namespace Clean_Arc
             });
             app.AddExceptionHandlerExtension();
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

@@ -1,7 +1,7 @@
-﻿using CleanArc.Application.Commands;
+﻿using CleanArc.Application.Commands.Animal;
 using FluentValidation;
 
-namespace CleanArc.Application.Validations
+namespace CleanArc.Application.Validations.Animal
 {
     public class DeleteAnimalValidator : AbstractValidator<DeleteAnimalCommand>
     {

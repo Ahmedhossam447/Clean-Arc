@@ -1,6 +1,8 @@
 ﻿using CleanArc.Application.Commands;
+using CleanArc.Application.Commands.Animal;
 using CleanArc.Application.Contracts.Responses.Animal;
 using CleanArc.Application.Queries;
+using CleanArc.Application.Queries.Animal;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
