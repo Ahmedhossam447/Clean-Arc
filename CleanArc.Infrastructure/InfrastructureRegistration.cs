@@ -23,6 +23,11 @@ namespace CleanArc.Infrastructure
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = configuration.GetConnectionString("RedisConnection");
+                options.InstanceName = "CleanArc";
+            });
 
             // Register repositories
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));

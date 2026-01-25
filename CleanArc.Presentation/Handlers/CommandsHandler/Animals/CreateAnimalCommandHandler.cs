@@ -3,16 +3,21 @@ using CleanArc.Application.Contracts.Responses.Animal;
 using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace CleanArc.Application.Handlers.CommandsHandler.Animals
 {
     public class CreateAnimalCommandHandler : IRequestHandler<CreateAnimalCommand, CreateAnimalResponse>
     {
         private readonly IRepository<Core.Entites.Animal> _animalRepository;
-        public CreateAnimalCommandHandler(IRepository<Core.Entites.Animal> animalRepository)
+        private readonly IDistributedCache _cache;
+
+        public CreateAnimalCommandHandler(IRepository<Core.Entites.Animal> animalRepository, IDistributedCache cache)
         {
             _animalRepository = animalRepository;
+            _cache = cache;
         }
+
         public async Task<CreateAnimalResponse> Handle(CreateAnimalCommand request, CancellationToken cancellationToken)
         {
             var animal = new Core.Entites.Animal
@@ -27,8 +32,13 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
                 Gender = request.Gender,
                 Photo = request.Photo,
             };
-            var animalResponse=await _animalRepository.AddAsync(animal);
+            var animalResponse = await _animalRepository.AddAsync(animal);
             await _animalRepository.SaveChangesAsync();
+
+            // Invalidate the creator's available animals cache
+            // Other users' caches will expire naturally (2 min TTL)
+            await _cache.RemoveAsync($"animals:available:{request.Userid}", cancellationToken);
+
             var response = new CreateAnimalResponse
             {
                 AnimalId = animalResponse.AnimalId,

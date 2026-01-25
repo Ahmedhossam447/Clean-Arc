@@ -5,9 +5,7 @@ using CleanArc.Core.Events;
 using CleanArc.Core.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace CleanArc.Application.Handlers.CommandsHandler.Animals
 {
@@ -16,11 +14,18 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
         private readonly IRepository<Animal> _animalRepository;
         private readonly IMediator _mediator;
         private readonly UserManager<ApplicationUser> _userManager;
-        public AdoptAnimalCommandHandler(IRepository<Animal> animalRepository, IMediator mediator,UserManager<ApplicationUser> userManager)
+        private readonly IDistributedCache _cache;
+
+        public AdoptAnimalCommandHandler(
+            IRepository<Animal> animalRepository,
+            IMediator mediator,
+            UserManager<ApplicationUser> userManager,
+            IDistributedCache cache)
         {
             _animalRepository = animalRepository;
             _mediator = mediator;
             _userManager = userManager;
+            _cache = cache;
         }
         public async Task<AdoptAnimalResponse> Handle(AdoptAnimalCommand request, CancellationToken cancellationToken)
         {
@@ -48,8 +53,15 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
                 throw new InvalidOperationException("You cannot adopt your own animal");
             }
             animal.IsAdopted = true;
-             _animalRepository.Update(animal);
+            _animalRepository.Update(animal);
             await _animalRepository.SaveChangesAsync();
+
+            // Invalidate the specific animal cache
+            await _cache.RemoveAsync($"animal:{animal.AnimalId}", cancellationToken);
+            // Invalidate both adopter's and owner's available animals cache
+            await _cache.RemoveAsync($"animals:available:{request.AdopterId}", cancellationToken);
+            await _cache.RemoveAsync($"animals:available:{owner.Id}", cancellationToken);
+
             // Raise AnimalAdoptedEvent
             await _mediator.Publish(new AnimalAdoptedEvent(
             

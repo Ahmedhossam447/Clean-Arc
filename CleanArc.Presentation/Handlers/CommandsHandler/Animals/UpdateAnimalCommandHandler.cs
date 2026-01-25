@@ -3,16 +3,21 @@ using CleanArc.Application.Contracts.Responses.Animal;
 using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace CleanArc.Application.Handlers.CommandsHandler.Animals
 {
     public class UpdateAnimalCommandHandler : IRequestHandler<UpdateAnimalCommand, UpdateAnimalResponse>
     {
         private readonly IRepository<Animal> _animalRepository;
-        public UpdateAnimalCommandHandler(IRepository<Animal> animalRepository)
+        private readonly IDistributedCache _cache;
+
+        public UpdateAnimalCommandHandler(IRepository<Animal> animalRepository, IDistributedCache cache)
         {
             _animalRepository = animalRepository;
+            _cache = cache;
         }
+
         public async Task<UpdateAnimalResponse> Handle(UpdateAnimalCommand request, CancellationToken cancellationToken)
         {
             var animal = await _animalRepository.GetByIdAsync(request.AnimalId);
@@ -28,6 +33,12 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
             animal.Photo = request.Photo ?? animal.Photo;
             _animalRepository.Update(animal);
             await _animalRepository.SaveChangesAsync();
+
+            // Invalidate the specific animal cache
+            await _cache.RemoveAsync($"animal:{animal.AnimalId}", cancellationToken);
+            // Invalidate the owner's available animals cache
+            await _cache.RemoveAsync($"animals:available:{animal.Userid}", cancellationToken);
+
             var response = new UpdateAnimalResponse
             {
                 AnimalId = animal.AnimalId,
