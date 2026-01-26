@@ -1,7 +1,8 @@
-﻿using CleanArc.Core.Entites;
-using CleanArc.Core.Interfaces;
+﻿using CleanArc.Core.Interfaces;
+using CleanArc.Infrastructure.Identity;
 using CleanArc.Infrastructure.Persistence;
 using CleanArc.Infrastructure.Persistence.Data;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using CleanArc.Application.Consumers;
 
 namespace CleanArc.Infrastructure
 {
@@ -45,10 +47,43 @@ namespace CleanArc.Infrastructure
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = configuration["Jwt:Issuer"],
                     ValidAudience = configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                        configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured")))
                 };
             });
-            
+            services.AddMassTransit(x =>
+            {
+                // Consumer 1: Email notifications
+                x.AddConsumer<AnimalAdoptConsumer>();
+                
+                // Consumer 2: Audit logging
+                x.AddConsumer<LogAdoptionAuditConsumer>();
+                
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host("localhost", "/", h =>
+                    {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
+
+                    // Queue for email notifications
+                    cfg.ReceiveEndpoint("animal-adopted-notifications", e =>
+                    {
+                        e.ConfigureConsumer<AnimalAdoptConsumer>(context);
+                    });
+                    
+                    // Separate queue for audit logging (both consumers receive the same event)
+                    cfg.ReceiveEndpoint("animal-adopted-audit", e =>
+                    {
+                        e.ConfigureConsumer<LogAdoptionAuditConsumer>(context);
+                    });
+                    
+                    cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                });
+            });
+
+
 
         }
     }

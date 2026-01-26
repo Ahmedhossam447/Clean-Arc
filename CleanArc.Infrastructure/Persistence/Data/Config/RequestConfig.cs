@@ -9,19 +9,25 @@ namespace CleanArc.Infrastructure.Persistence.Data.Config
         public void Configure(EntityTypeBuilder<Request> builder)
         {
             builder.HasKey(r => r.Reqid);
-            builder.HasOne(r => r.User)
-                   .WithMany()
-                   .HasForeignKey(r => r.Userid)
-                   .OnDelete(DeleteBehavior.Restrict);
-            builder.HasOne(r => r.User2).WithMany()
-                .HasForeignKey(r => r.Useridreq)
-                .OnDelete(DeleteBehavior.Restrict);
+
+            // Userid and Useridreq are just string FKs - no navigation to ApplicationUser
+            // This keeps the Core layer clean from Identity dependencies
+            builder.Property(r => r.Userid)
+                   .IsRequired()
+                   .HasMaxLength(450);
+
+            builder.Property(r => r.Useridreq)
+                   .IsRequired()
+                   .HasMaxLength(450);
+
             builder.HasOne(r => r.Animal)
-                   .WithMany(r=>r.Requests)
+                   .WithMany(a => a.Requests)
                    .HasForeignKey(r => r.AnimalId)
                    .OnDelete(DeleteBehavior.Cascade);
+
             builder.Property(r => r.Status)
-                   .HasMaxLength(50).HasDefaultValue("Pending");
+                   .HasMaxLength(50)
+                   .HasDefaultValue("Pending");
         }
     }
 }

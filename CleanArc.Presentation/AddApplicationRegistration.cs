@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using FluentValidation;
 using huzcodes.Extensions.Exceptions;
 using CleanArc.Application.Pipeline_Behaviour;
+using MassTransit;
 
 namespace CleanArc.Application
 {
@@ -15,8 +16,6 @@ namespace CleanArc.Application
             services.AddFluentValidation(typeof(AddApplicationRegistration));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestPipline<,>));
-
-
         }
     }
 }

@@ -22,7 +22,6 @@ public partial class Animal
     public string? About { get; set; }
 
     public string? Userid { get; set; }
-    public virtual ApplicationUser? User { get; set; }
 
     public virtual ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
 

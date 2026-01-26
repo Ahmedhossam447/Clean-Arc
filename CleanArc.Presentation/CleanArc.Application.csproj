@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="huzcodes.Extensions" Version="1.3.0" />
+    <PackageReference Include="MassTransit" Version="9.0.0" />
     <PackageReference Include="MediatR" Version="14.0.0" />
   </ItemGroup>
 
@@ -19,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CleanArc.Core\CleanArc.Core.csproj" />
-    <ProjectReference Include="..\CleanArc.Services\CleanArc.Services.csproj" />
   </ItemGroup>
 
 </Project>

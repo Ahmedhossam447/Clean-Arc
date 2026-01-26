@@ -22,20 +22,32 @@ namespace CleanArc.Application.Pipeline_Behaviour
             {
                 return await next();
             }
-
-            var cachedResponse = await _cache.GetStringAsync(cacheableQuery.CacheKey);
+            try { 
+            var cachedResponse = await _cache.GetStringAsync(cacheableQuery.CacheKey,cancellationToken);
             if (!string.IsNullOrEmpty(cachedResponse))
             {
                 var response = JsonSerializer.Deserialize<TResponse>(cachedResponse);
                 return response!;
             }
-            var result = await next();
-            var options = new DistributedCacheEntryOptions
+            }
+            catch
             {
-                AbsoluteExpirationRelativeToNow = cacheableQuery.CacheDuration ?? TimeSpan.FromMinutes(5)
-            };
-            var serializedResponse = JsonSerializer.Serialize(result);
-            await _cache.SetStringAsync(cacheableQuery.CacheKey, serializedResponse, options,cancellationToken);
+                // Ignore cache errors and proceed to fetch fresh data
+            }
+            var result = await next();
+            try
+            {
+                var options = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = cacheableQuery.CacheDuration ?? TimeSpan.FromMinutes(5)
+                };
+                var serializedResponse = JsonSerializer.Serialize(result);
+                await _cache.SetStringAsync(cacheableQuery.CacheKey, serializedResponse, options, cancellationToken);
+            }
+            catch
+            {
+                // Ignore cache errors
+            }
             return result;
         }
     }

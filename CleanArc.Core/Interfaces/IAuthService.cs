@@ -1,14 +1,15 @@
-﻿using CleanArc.Core.Entites;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
+﻿using CleanArc.Core.Models.Identity;
 
 namespace CleanArc.Core.Interfaces
 {
     public interface IAuthService
     {
-        public Task<(bool Succeeded, string[] Errors)> RegisterUserAsync(string username, string password,string email);
-        public Task<ApplicationUser?> LoginUserAsync(string email, string password);
+        Task<(bool Succeeded, string[] Errors)> RegisterUserAsync(string username, string password, string email);
+        
+        /// <summary>
+        /// Validates credentials and returns the authenticated user data.
+        /// Returns null if login fails.
+        /// </summary>
+        Task<AuthUser?> LoginUserAsync(string email, string password);
     }
 }

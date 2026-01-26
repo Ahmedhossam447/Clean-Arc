@@ -51,7 +51,7 @@ namespace CleanArc.Infrastructure.Persistence
         }
         public async Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate)
         {
-            return await Task.Run(() => _dbSet.AsQueryable().Where(predicate));
+            return await _dbSet.Where(predicate).ToListAsync();
         }
         public async Task SaveChangesAsync()
         {

@@ -2,37 +2,18 @@ using MediatR;
 
 namespace CleanArc.Core.Events
 {
-    public class AnimalAdoptedEvent : INotification
+    public class AnimalAdoptedEvent 
     {
-        public int AnimalId { get; }
-        public string AnimalName { get; }
-        public string AnimalType { get; }
-        public string AdopterId { get; }
-        public string AdopterName { get; }
-        public string AdopterEmail { get; }
-        public string OwnerId { get; }
-        public string OwnerEmail { get; }
-        public DateTime AdoptedAt { get; }
+        public int AnimalId { get; set; }
+        public string AnimalName { get; set; }
+        public string AnimalType { get; set; }
+        public string AdopterId { get; set; }
+        public string AdopterName { get; set; }
+        public string AdopterEmail { get; set; }
+        public string OwnerId { get; set; }
+        public string OwnerEmail { get; set; }
+        public DateTime AdoptedAt { get; set; }
 
-        public AnimalAdoptedEvent(
-            int animalId,
-            string animalName,
-            string animalType,
-            string adopterId,
-            string adopterName,
-            string adopterEmail,
-            string ownerId,
-            string ownerEmail)
-        {
-            AnimalId = animalId;
-            AnimalName = animalName;
-            AnimalType = animalType;
-            AdopterId = adopterId;
-            AdopterName = adopterName;
-            AdopterEmail = adopterEmail;
-            OwnerId = ownerId;
-            OwnerEmail = ownerEmail;
-            AdoptedAt = DateTime.UtcNow;
-        }
+
     }
 }

@@ -1,12 +1,9 @@
-﻿using CleanArc.Core.Entites;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using CleanArc.Core.Models.Identity;
 
 namespace CleanArc.Core.Interfaces
 {
     public interface ITokenService
     {
-       string GenerateAccessToken(ApplicationUser user);
+        string GenerateAccessToken(AuthUser user);
     }
 }
