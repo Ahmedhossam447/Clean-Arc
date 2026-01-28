@@ -1,16 +1,14 @@
 ﻿using CleanArc.Application.Contracts.Responses.Animal;
+using CleanArc.Core.Primitives;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
 
-namespace CleanArc.Application.Commands.Animal
+namespace CleanArc.Application.Commands.Animal;
+
+public class AdoptAnimalCommand : IRequest<Result<AdoptAnimalResponse>>
 {
-    public class AdoptAnimalCommand :IRequest<AdoptAnimalResponse>
-    {
-        public int AnimalId { get; set; }
-        [JsonIgnore]
-        public string AdopterId { get; set; }
-    }
+    public int AnimalId { get; set; }
+
+    [JsonIgnore]
+    public string AdopterId { get; set; } = string.Empty;
 }

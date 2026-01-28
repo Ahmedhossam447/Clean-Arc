@@ -10,4 +10,7 @@
     <Project Path="Clean Arc/CleanArc.csproj" />
     <Project Path="CleanArc.Presentation/CleanArc.Application.csproj" Id="dce6b8d8-e0fb-4e0e-9e5e-fc640ee9c29f" />
   </Folder>
+  <Folder Name="/Testing/">
+    <Project Path="CleanArc.Testing/CleanArc.Testing.csproj" Id="6d7e5e99-5bd3-47a8-a0fe-ced8c23a9526" />
+  </Folder>
 </Solution>

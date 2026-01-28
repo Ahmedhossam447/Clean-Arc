@@ -1,9 +1,6 @@
 namespace CleanArc.Core.Models.Identity
 {
-    /// <summary>
-    /// A pure domain model representing authenticated user data.
-    /// This is decoupled from ASP.NET Identity's ApplicationUser.
-    /// </summary>
+
     public class AuthUser
     {
         public string Id { get; set; } = string.Empty;
