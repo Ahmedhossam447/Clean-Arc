@@ -21,6 +21,8 @@ public class AnimalController : ControllerBase
         _mediator = mediator;
     }
 
+    // POST
+
     [Authorize]
     [HttpPost]
     public async Task<ActionResult<CreateAnimalResponse>> CreateAnimal([FromBody] CreateAnimalCommand command)
@@ -30,27 +32,43 @@ public class AnimalController : ControllerBase
     }
 
     [Authorize]
-    [HttpPut("{id}")]
-    public async Task<ActionResult<UpdateAnimalResponse>> UpdateAnimal(int id, [FromBody] UpdateAnimalCommand command)
+    [HttpPost("{animalid}/Adopt")]
+    public async Task<ActionResult<AdoptAnimalResponse>> AdoptAnimal([FromRoute] int animalid)
     {
-        command.AnimalId = id;
+        var adopterid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (adopterid == null)
+            return Unauthorized();
+
+        var command = new AdoptAnimalCommand
+        {
+            AnimalId = animalid,
+            AdopterId = adopterid
+        };
+
         var result = await _mediator.Send(command);
-        return result;
+        return result.ToActionResult(this);
     }
 
-    [Authorize]
-    [HttpDelete("{id}")]
-    public async Task<ActionResult<DeleteAnimalResponse>> DeleteAnimal([FromRoute] int id)
-    {
-        var command = new DeleteAnimalCommand { AnimalId = id };
-        var result = await _mediator.Send(command);
-        return result;
-    }
+    // GET
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<ReadAnimalResponse>> GetAnimalById([FromRoute] int id)
     {
         var query = new GetAnimalByIdQuery { AnimalId = id };
+        var result = await _mediator.Send(query);
+        return result;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<PaginationResponse<ReadAnimalResponse>>> GetAllAnimals(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var query = new GetAllAnimalsQuery
+        {
+            PageNumber = page,
+            PageSize = pageSize
+        };
         var result = await _mediator.Send(query);
         return result;
     }
@@ -64,20 +82,6 @@ public class AnimalController : ControllerBase
         var query = new GetAvailableAnimalsForAdoptionQuery
         {
             UserId = userId,
-            PageNumber = page,
-            PageSize = pageSize
-        };
-        var result = await _mediator.Send(query);
-        return result;
-    }
-
-    [HttpGet]
-    public async Task<ActionResult<PaginationResponse<ReadAnimalResponse>>> GetAllAnimals(
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
-    {
-        var query = new GetAllAnimalsQuery
-        {
             PageNumber = page,
             PageSize = pageSize
         };
@@ -106,24 +110,6 @@ public class AnimalController : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("{animalid}/Adopt")]
-    public async Task<ActionResult<AdoptAnimalResponse>> AdoptAnimal([FromRoute] int animalid)
-    {
-        var adopterid = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (adopterid == null)
-            return Unauthorized();
-
-        var command = new AdoptAnimalCommand
-        {
-            AnimalId = animalid,
-            AdopterId = adopterid
-        };
-
-        var result = await _mediator.Send(command);
-        return result.ToActionResult(this);
-    }
-
-    [Authorize]
     [HttpGet("Owner/{ownerId}")]
     public async Task<ActionResult<PaginationResponse<ReadAnimalResponse>>> GetAnimalsByOwner(
         [FromRoute] string ownerId,
@@ -138,5 +124,27 @@ public class AnimalController : ControllerBase
         };
         var result = await _mediator.Send(query);
         return result;
+    }
+
+    // PUT
+
+    [Authorize]
+    [HttpPut("{id}")]
+    public async Task<ActionResult<UpdateAnimalResponse>> UpdateAnimal(int id, [FromBody] UpdateAnimalCommand command)
+    {
+        command.AnimalId = id;
+        var result = await _mediator.Send(command);
+        return result;
+    }
+
+    // DELETE
+
+    [Authorize]
+    [HttpDelete("{id}")]
+    public async Task<ActionResult<DeleteAnimalResponse>> DeleteAnimal([FromRoute] int id)
+    {
+        var command = new DeleteAnimalCommand { AnimalId = id };
+        var result = await _mediator.Send(command);
+        return result.ToActionResult(this);
     }
 }

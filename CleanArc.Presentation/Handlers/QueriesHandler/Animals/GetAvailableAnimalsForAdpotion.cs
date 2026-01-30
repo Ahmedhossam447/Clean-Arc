@@ -1,24 +1,23 @@
 ﻿using CleanArc.Application.Contracts.Responses;
 using CleanArc.Application.Contracts.Responses.Animal;
 using CleanArc.Application.Queries.Animal;
-using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using MediatR;
 
-namespace CleanArc.Application.Handlers.QueriesHandler;
+namespace CleanArc.Application.Handlers.QueriesHandler.Animals;
 
-public class GetAnimalByOwnerQueryHandler : IRequestHandler<GetAnimalsByOwnerQuery, PaginationResponse<ReadAnimalResponse>>
+public class GetAvailableAnimalsForAdoptionHandler : IRequestHandler<GetAvailableAnimalsForAdoptionQuery, PaginationResponse<ReadAnimalResponse>>
 {
-    private readonly IRepository<Animal> _animalRepository;
+    private readonly IAnimalServices _animalServices;
 
-    public GetAnimalByOwnerQueryHandler(IRepository<Animal> animalRepository)
+    public GetAvailableAnimalsForAdoptionHandler(IAnimalServices animalServices)
     {
-        _animalRepository = animalRepository;
+        _animalServices = animalServices;
     }
 
-    public async Task<PaginationResponse<ReadAnimalResponse>> Handle(GetAnimalsByOwnerQuery request, CancellationToken cancellationToken)
+    public async Task<PaginationResponse<ReadAnimalResponse>> Handle(GetAvailableAnimalsForAdoptionQuery request, CancellationToken cancellationToken)
     {
-        var animals = await _animalRepository.GetAsync(a => a.Userid == request.OwnerId);
+        var animals = await _animalServices.GetAvailableAnimalsForAdoption(request.UserId);
 
         int totalCount = animals.Count();
         int totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
@@ -31,11 +30,11 @@ public class GetAnimalByOwnerQueryHandler : IRequestHandler<GetAnimalsByOwnerQue
                 AnimalId = a.AnimalId,
                 Name = a.Name,
                 Type = a.Type,
-                Breed = a.Breed,
                 Age = a.Age,
-                Gender = a.Gender,
+                Breed = a.Breed,
                 Photo = a.Photo,
                 About = a.About,
+                Gender = a.Gender,
                 IsAdopted = a.IsAdopted,
                 Userid = a.Userid
             }).ToList();

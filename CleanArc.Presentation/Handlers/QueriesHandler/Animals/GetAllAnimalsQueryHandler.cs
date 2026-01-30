@@ -7,7 +7,7 @@ using CleanArc.Core.Interfaces;
 using MediatR;
 using System.Linq;
 
-namespace CleanArc.Application.Handlers.QueriesHandler
+namespace CleanArc.Application.Handlers.QueriesHandler.Animals
 {
     public class GetAllAnimalsQueryHandler : IRequestHandler<GetAllAnimalsQuery,PaginationResponse<ReadAnimalResponse>>
     {

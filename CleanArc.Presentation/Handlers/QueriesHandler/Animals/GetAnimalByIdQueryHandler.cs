@@ -4,7 +4,7 @@ using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using MediatR;
 
-namespace CleanArc.Application.Handlers.QueriesHandler
+namespace CleanArc.Application.Handlers.QueriesHandler.Animals
 {
     public class GetAnimalByIdQueryHandler : IRequestHandler<GetAnimalByIdQuery, ReadAnimalResponse>
     {

@@ -32,6 +32,21 @@ namespace Clean_Arc
                     Version = "v1"
                 });
 
+                // Order endpoints: POST, GET, PUT, DELETE (strictly grouped by method)
+                options.OrderActionsBy(desc =>
+                {
+                    var methodOrder = desc.HttpMethod switch
+                    {
+                        "POST" => "0",
+                        "GET" => "1", 
+                        "PUT" => "2",
+                        "PATCH" => "3",
+                        "DELETE" => "4",
+                        _ => "5"
+                    };
+                    return $"{desc.ActionDescriptor.RouteValues["controller"]}~{methodOrder}";
+                });
+
                 // Add JWT Authentication
                 const string schemeName = "Bearer";
                 

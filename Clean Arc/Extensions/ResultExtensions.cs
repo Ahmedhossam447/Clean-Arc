@@ -44,6 +44,7 @@ public static class ResultExtensions
 
         if (error.Code == "Animal.AlreadyAdopted" ||
             error.Code == "Animal.CannotAdoptOwnAnimal" ||
+            error.Code == "Request.CannotRequestOwnAnimal" ||
             error.Code.EndsWith(".AlreadyExists"))
         {
             return controller.Conflict(problemDetails);
@@ -70,7 +71,8 @@ public static class ResultExtensions
             return controller.NotFound(problemDetails);
 
         if (error.Code == "Animal.AlreadyAdopted" ||
-            error.Code == "Animal.CannotAdoptOwnAnimal")
+            error.Code == "Animal.CannotAdoptOwnAnimal" ||
+            error.Code == "Request.CannotRequestOwnAnimal")
         {
             return controller.Conflict(problemDetails);
         }

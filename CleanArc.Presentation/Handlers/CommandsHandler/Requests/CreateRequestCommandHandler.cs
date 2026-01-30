@@ -2,50 +2,66 @@ using CleanArc.Application.Commands.Request;
 using CleanArc.Application.Contracts.Responses.Request;
 using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
+using CleanArc.Core.Primitives;
 using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 {
-    public class CreateRequestCommandHandler : IRequestHandler<CreateRequestCommand, CreateRequestResponse>
+    public class CreateRequestCommandHandler : IRequestHandler<CreateRequestCommand, Result<CreateRequestResponse>>
     {
         private readonly IRepository<Request> _requestRepository;
         private readonly IRepository<Animal> _animalRepository;
+        private readonly IDistributedCache _cache;
 
-        public CreateRequestCommandHandler(IRepository<Request> requestRepository, IRepository<Animal> animalRepository)
+        public CreateRequestCommandHandler(
+            IRepository<Request> requestRepository, 
+            IRepository<Animal> animalRepository,
+            IDistributedCache cache)
         {
             _requestRepository = requestRepository;
             _animalRepository = animalRepository;
+            _cache = cache;
         }
 
-        public async Task<CreateRequestResponse> Handle(CreateRequestCommand command, CancellationToken cancellationToken)
+        public async Task<Result<CreateRequestResponse>> Handle(CreateRequestCommand command, CancellationToken cancellationToken)
         {
-            // Verify animal exists and is available
             var animal = await _animalRepository.GetByIdAsync(command.AnimalId);
             if (animal == null)
             {
-                throw new KeyNotFoundException($"Animal with ID {command.AnimalId} not found");
+                return Animal.Errors.NotFound;
             }
 
             if (animal.IsAdopted)
             {
-                throw new InvalidOperationException("This animal has already been adopted");
+                return Animal.Errors.AlreadyAdopted;
             }
-            if (animal.Userid != command.Useridreq)
+
+            if (animal.Userid == command.RequesterId)
             {
-                throw new InvalidOperationException("the request has to be to the animal owner");
+                return Request.Errors.CannotRequestOwnAnimal;
+            }
+
+            var existingRequests = await _requestRepository.GetAsync(
+                r => r.AnimalId == command.AnimalId && r.Useridreq == command.RequesterId);
+            
+            if (existingRequests.Any())
+            {
+                return Request.Errors.AlreadyExists;
             }
 
             var request = new Request
             {
-                Userid = command.Userid,
-                Useridreq = command.Useridreq,
+                Userid = animal.Userid,
+                Useridreq = command.RequesterId,
                 AnimalId = command.AnimalId,
                 Status = "Pending"
             };
-            
 
             await _requestRepository.AddAsync(request);
             await _requestRepository.SaveChangesAsync();
+
+            await _cache.RemoveAsync($"requests:user:{command.RequesterId}");
 
             var response = new CreateRequestResponse
             {

@@ -2,44 +2,60 @@
 using CleanArc.Application.Contracts.Responses.Animal;
 using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
+using CleanArc.Core.Primitives;
 using MediatR;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace CleanArc.Application.Handlers.CommandsHandler.Animals
 {
-    public class DeleteAnimalCommandHandler : IRequestHandler<DeleteAnimalCommand, DeleteAnimalResponse>
+    public class DeleteAnimalCommandHandler : IRequestHandler<DeleteAnimalCommand, Result<DeleteAnimalResponse>>
     {
         private readonly IRepository<Animal> _animalRepository;
+        private readonly IRepository<Request> _requestRepository;
         private readonly IDistributedCache _cache;
 
-        public DeleteAnimalCommandHandler(IRepository<Animal> animalRepository, IDistributedCache cache)
+        public DeleteAnimalCommandHandler(
+            IRepository<Animal> animalRepository, 
+            IRepository<Request> requestRepository,
+            IDistributedCache cache)
         {
             _animalRepository = animalRepository;
+            _requestRepository = requestRepository;
             _cache = cache;
         }
 
-        public async Task<DeleteAnimalResponse> Handle(DeleteAnimalCommand request, CancellationToken cancellationToken)
+        public async Task<Result<DeleteAnimalResponse>> Handle(DeleteAnimalCommand command, CancellationToken cancellationToken)
         {
-            var animal = await _animalRepository.GetByIdAsync(request.AnimalId);
+            var animal = await _animalRepository.GetByIdAsync(command.AnimalId);
             if (animal == null)
             {
-                throw new KeyNotFoundException($"Animal with ID {request.AnimalId} not found");
+                return Animal.Errors.NotFound;
+            }
+
+            var requests = await _requestRepository.GetAsync(r => r.AnimalId == command.AnimalId);
+            var affectedUserIds = requests.Select(r => r.Useridreq).Distinct().ToList();
+
+            foreach (var req in requests)
+            {
+                await _requestRepository.Delete(req.Reqid);
             }
 
             await _animalRepository.Delete(animal.AnimalId);
             await _animalRepository.SaveChangesAsync();
 
-            // Invalidate the specific animal cache
             await _cache.RemoveAsync($"animal:{animal.AnimalId}", cancellationToken);
-            // Invalidate the owner's available animals cache
             await _cache.RemoveAsync($"animals:available:{animal.Userid}", cancellationToken);
 
-            var response = new DeleteAnimalResponse
+            foreach (var userId in affectedUserIds)
             {
-                AnimalId = request.AnimalId,
+                await _cache.RemoveAsync($"requests:user:{userId}", cancellationToken);
+            }
+
+            return new DeleteAnimalResponse
+            {
+                AnimalId = command.AnimalId,
                 Message = "Animal deleted successfully."
             };
-            return response;
         }
     }
 }
