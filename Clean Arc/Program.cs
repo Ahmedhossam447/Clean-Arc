@@ -1,4 +1,7 @@
+using Clean_Arc.Hubs;
+using CleanArc;
 using CleanArc.Application;
+using CleanArc.Core.Interfaces;
 using CleanArc.Infrastructure;
 using CleanArc.Services;
 using huzcodes.Extensions.Exceptions;
@@ -22,6 +25,8 @@ namespace Clean_Arc
 
 
             builder.Services.AddServices();
+            builder.Services.AddSignalR();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen(options =>
@@ -89,6 +94,7 @@ namespace Clean_Arc
 
 
             app.MapControllers();
+            app.MapHub<ChatHub>("/chatHub");
 
             app.Run();
         }

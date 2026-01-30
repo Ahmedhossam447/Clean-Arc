@@ -11,13 +11,16 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
     {
         private readonly IRepository<Request> _requestRepository;
         private readonly IDistributedCache _cache;
+        private readonly INotificationService _notificationService;
 
         public RejectRequestCommandHandler(
             IRepository<Request> requestRepository,
-            IDistributedCache cache)
+            IDistributedCache cache,
+            INotificationService notificationService)
         {
             _requestRepository = requestRepository;
             _cache = cache;
+            _notificationService = notificationService;
         }
 
         public async Task<Result> Handle(RejectRequestCommand command, CancellationToken cancellationToken)
@@ -34,10 +37,9 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 
             await _requestRepository.Delete(request.Reqid);
             await _requestRepository.SaveChangesAsync();
+            await _notificationService.SendNotificationAsync(requesterId, "RequestRejected", new { RequestId = request.Reqid, AnimalId = request.AnimalId });
 
             await _cache.RemoveAsync($"requests:user:{requesterId}", cancellationToken);
-
-            // TODO: Send SignalR notification to requester
 
             return Result.Success();
         }

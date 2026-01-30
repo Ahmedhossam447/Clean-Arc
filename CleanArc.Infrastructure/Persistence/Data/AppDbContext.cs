@@ -13,6 +13,8 @@ namespace CleanArc.Infrastructure.Persistence.Data
         public DbSet<VaccinationNeeded> VaccinationNeededs { get; set; }
         public DbSet<Request> Requests { get; set; }
         public DbSet<AdoptionAuditLog> AdoptionAuditLogs { get; set; }
+        public DbSet<UserConnection> UserConnections { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 

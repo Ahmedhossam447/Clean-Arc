@@ -13,15 +13,18 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
         private readonly IRepository<Request> _requestRepository;
         private readonly IDistributedCache _cache;
         private readonly IMediator _mediator;
+        private readonly INotificationService _notificationService;
 
         public AcceptRequestCommandHandler(
             IRepository<Request> requestRepository,
             IDistributedCache cache,
-            IMediator mediator)
+            IMediator mediator,
+            INotificationService notificationService)
         {
             _requestRepository = requestRepository;
             _cache = cache;
             _mediator = mediator;
+            _notificationService = notificationService;
         }
 
         public async Task<Result> Handle(AcceptRequestCommand command, CancellationToken cancellationToken)
@@ -52,6 +55,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
             request.Status = "Approved";
             _requestRepository.Update(request);
             await _requestRepository.SaveChangesAsync();
+            await _notificationService.SendNotificationAsync(request.Useridreq, "RequestApproved", new { RequestId = request.Reqid, AnimalId = request.AnimalId });
 
             await _cache.RemoveAsync($"requests:user:{request.Useridreq}", cancellationToken);
 
