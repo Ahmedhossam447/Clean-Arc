@@ -1,5 +1,6 @@
 ﻿using Clean_Arc.Extensions;
 using CleanArc.Application.Commands.Animal;
+using CleanArc.Application.Contracts.Responses;
 using CleanArc.Application.Contracts.Responses.Animal;
 using CleanArc.Application.Queries.Animal;
 using MediatR;
@@ -55,17 +56,51 @@ public class AnimalController : ControllerBase
     }
 
     [HttpGet("Available/{userId:guid}")]
-    public async Task<ActionResult<GetAvailableAnimalsForAdoptionResponse>> GetAvailableAnimalsForAdoption([FromRoute] string userId)
+    public async Task<ActionResult<PaginationResponse<ReadAnimalResponse>>> GetAvailableAnimalsForAdoption(
+        [FromRoute] string userId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
-        var query = new GetAvailableAnimalsForAdoptionQuery { UserId = userId };
+        var query = new GetAvailableAnimalsForAdoptionQuery
+        {
+            UserId = userId,
+            PageNumber = page,
+            PageSize = pageSize
+        };
         var result = await _mediator.Send(query);
         return result;
     }
 
     [HttpGet]
-    public async Task<ActionResult<GetAllAnimalsResponse>> GetAllAnimals()
+    public async Task<ActionResult<PaginationResponse<ReadAnimalResponse>>> GetAllAnimals(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
     {
-        var query = new GetAllAnimalsQuery();
+        var query = new GetAllAnimalsQuery
+        {
+            PageNumber = page,
+            PageSize = pageSize
+        };
+        var result = await _mediator.Send(query);
+        return result;
+    }
+
+    [HttpGet("Search")]
+    public async Task<ActionResult<PaginationResponse<ReadAnimalResponse>>> SearchAnimals(
+        [FromQuery] string? type,
+        [FromQuery] string? breed,
+        [FromQuery] string? gender,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var query = new SearchAnimalsQuery
+        {
+            Type = type,
+            Breed = breed,
+            Gender = gender,
+            PageNumber = page,
+            PageSize = pageSize
+        };
         var result = await _mediator.Send(query);
         return result;
     }
@@ -86,5 +121,22 @@ public class AnimalController : ControllerBase
 
         var result = await _mediator.Send(command);
         return result.ToActionResult(this);
+    }
+
+    [Authorize]
+    [HttpGet("Owner/{ownerId}")]
+    public async Task<ActionResult<PaginationResponse<ReadAnimalResponse>>> GetAnimalsByOwner(
+        [FromRoute] string ownerId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var query = new GetAnimalsByOwnerQuery
+        {
+            OwnerId = ownerId,
+            PageNumber = page,
+            PageSize = pageSize
+        };
+        var result = await _mediator.Send(query);
+        return result;
     }
 }

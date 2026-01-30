@@ -1,18 +1,16 @@
-﻿using CleanArc.Application.Contracts.Responses.Animal;
+﻿using CleanArc.Application.Contracts.Responses;
+using CleanArc.Application.Contracts.Responses.Animal;
 using CleanArc.Core.Interfaces;
 using MediatR;
 
-namespace CleanArc.Application.Queries.Animal
+namespace CleanArc.Application.Queries.Animal;
+
+public class GetAvailableAnimalsForAdoptionQuery : IRequest<PaginationResponse<ReadAnimalResponse>>, ICacheableQuery
 {
-    public class GetAvailableAnimalsForAdoptionQuery : IRequest<GetAvailableAnimalsForAdoptionResponse>, ICacheableQuery
-    {
-        public string UserId { get; set; } = string.Empty;
+    public string UserId { get; set; } = string.Empty;
+    public int PageNumber { get; set; } = 1;
+    public int PageSize { get; set; } = 10;
 
-        // Cache key includes UserId because each user sees a different list
-        // (they can't adopt their own animals)
-        public string CacheKey => $"animals:available:{UserId}";
-
-        // Shorter TTL for lists - they change more frequently
-        public TimeSpan? CacheDuration => TimeSpan.FromMinutes(2);
-    }
+    public string CacheKey => $"animals:available:{UserId}:page:{PageNumber}";
+    public TimeSpan? CacheDuration => TimeSpan.FromMinutes(2);
 }
