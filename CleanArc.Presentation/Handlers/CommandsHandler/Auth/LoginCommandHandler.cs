@@ -29,13 +29,17 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Auth
                 };
             }
 
-            // AuthUser is now a clean Core model - no EF/Identity dependency
-            var token = _tokenService.GenerateAccessToken(authUser);
-            
+            var token = await _tokenService.GenerateRefreshTokenAsync(authUser.Id);
+            var accessToken = _tokenService.GenerateAccessToken(authUser);
+
             return new LoginResponse
             {
                 Succeeded = true,
-                Token = token
+                RefreshToken = token.Token,
+                RefreshTokenExpiry = token.ExpiresAt,
+                AccessToken = accessToken,
+                Errors = new List<string>()
+
             };
         }
     }

@@ -1,4 +1,5 @@
 ﻿using CleanArc.Core.Entites;
+using CleanArc.Core.Entities;
 using CleanArc.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ namespace CleanArc.Infrastructure.Persistence.Data
         public DbSet<AdoptionAuditLog> AdoptionAuditLogs { get; set; }
         public DbSet<UserConnection> UserConnections { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 

@@ -1,5 +1,8 @@
-﻿using CleanArc.Application.Commands.Auth;
+﻿using Clean_Arc.Extensions;
+using CleanArc.Application.Commands.Auth;
+using CleanArc.Application.Commands.Token;
 using CleanArc.Application.Contracts.Responses.Auth;
+using CleanArc.Application.Contracts.Responses.Token;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,11 +13,13 @@ namespace Clean_Arc.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IMediator _mediator;
+
         public AuthController(IMediator mediator)
         {
             _mediator = mediator;
         }
-        [HttpPost("Register")]
+
+        [HttpPost("register")]
         public async Task<ActionResult<RegisterResponse>> Register(RegisterCommand register)
         {
             var result = await _mediator.Send(register);
@@ -22,23 +27,32 @@ namespace Clean_Arc.Controllers
             {
                 return Ok(result);
             }
-            else
-            {
-                return BadRequest(result);
-            }
+            return BadRequest(result);
         }
-        [HttpPost("Login")]
+
+        [HttpPost("login")]
         public async Task<ActionResult<LoginResponse>> Login(LoginCommand login)
         {
             var result = await _mediator.Send(login);
-            if (result != null)
+            if (result.Succeeded)
             {
                 return Ok(result);
             }
-            else
-            {
-                return Unauthorized();
-            }
+            return Unauthorized(result);
+        }
+
+        [HttpPost("refresh")]
+        public async Task<ActionResult<RefreshTokenResponse>> Refresh(RefreshTokenCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.ToActionResult(this);
+        }
+
+        [HttpPost("logout")]
+        public async Task<ActionResult<LogoutResponse>> Logout(LogoutCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.ToActionResult(this);
         }
     }
 }

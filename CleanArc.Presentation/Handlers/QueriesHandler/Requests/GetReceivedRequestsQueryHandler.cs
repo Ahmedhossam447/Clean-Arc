@@ -4,13 +4,13 @@ using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using MediatR;
 
-namespace CleanArc.Application.Handlers.QueriesHandler.Request
+namespace CleanArc.Application.Handlers.QueriesHandler.Requests
 {
     public class GetReceivedRequestsQueryHandler : IRequestHandler<GetReceivedRequestsQuery, List<RequestResponse>>
     {
-        private readonly IRepository<Core.Entites.Request> _requestRepository;
+        private readonly IRepository<Request> _requestRepository;
 
-        public GetReceivedRequestsQueryHandler(IRepository<Core.Entites.Request> requestRepository)
+        public GetReceivedRequestsQueryHandler(IRepository<Request> requestRepository)
         {
             _requestRepository = requestRepository;
         }
