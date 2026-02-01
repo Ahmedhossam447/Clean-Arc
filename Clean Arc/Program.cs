@@ -1,4 +1,5 @@
 using Clean_Arc.Hubs;
+using Clean_Arc.Middleware;
 using CleanArc;
 using CleanArc.Application;
 using CleanArc.Core.Interfaces;
@@ -27,6 +28,7 @@ namespace Clean_Arc
             builder.Services.AddServices();
             builder.Services.AddSignalR();
             builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<GlobalExceptionHandler>();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             builder.Services.AddSwaggerGen(options =>
@@ -87,7 +89,7 @@ namespace Clean_Arc
                 c.RoutePrefix = "swagger"; // Swagger UI will be available at /swagger
                 c.DisplayRequestDuration();
             });
-            app.AddExceptionHandlerExtension();
+            app.UseMiddleware<GlobalExceptionHandler>();
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();

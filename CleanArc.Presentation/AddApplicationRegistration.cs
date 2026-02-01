@@ -1,4 +1,4 @@
-﻿using Clean_Arc.Application.Pipline_Behaviour;
+using Clean_Arc.Application.Pipline_Behaviour;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using FluentValidation;
