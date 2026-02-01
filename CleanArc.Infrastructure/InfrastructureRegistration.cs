@@ -22,7 +22,11 @@ namespace CleanArc.Infrastructure
                 options.UseSqlServer(connection));
 
             // Register Identity
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.SignIn.RequireConfirmedEmail = true;
+                options.User.RequireUniqueEmail = true;
+            })
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
             services.AddStackExchangeRedisCache(options =>

@@ -1,6 +1,7 @@
 ﻿using CleanArc.Application.Commands.Auth;
 using CleanArc.Application.Contracts.Responses.Auth;
 using CleanArc.Core.Interfaces;
+using CleanArc.Core.Primitives;
 using MediatR;
 
 namespace CleanArc.Application.Handlers.CommandsHandler.Auth
@@ -25,7 +26,16 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Auth
                 return new LoginResponse
                 {
                     Succeeded = false,
-                    Errors = new List<string> { "Invalid email or password." }
+                    Errors = new List<string> { UserErrors.InvalidCredentials.Description }
+                };
+            }
+            var emailconfirmed = await _authService.IsEmailConfirmedAsync(authUser.Email);
+            if (!emailconfirmed)
+            {
+                return new LoginResponse
+                {
+                    Succeeded = false,
+                    Errors = new List<string> { EmailErrors.NotConfirmed.Description }
                 };
             }
 

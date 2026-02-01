@@ -25,6 +25,22 @@ namespace CleanArc.Application.Validations.Auth
                 .Matches("[a-z]").WithMessage("Password must contain at least one lowercase letter.")
                 .Matches("[0-9]").WithMessage("Password must contain at least one digit.")
                 .Matches("[^a-zA-Z0-9]").WithMessage("Password must contain at least one special character.");
+
+            RuleFor(x => x.FullName)
+                .MaximumLength(100).WithMessage("Full name cannot exceed 100 characters.")
+                .When(x => !string.IsNullOrEmpty(x.FullName));
+
+            RuleFor(x => x.Bio)
+                .MaximumLength(500).WithMessage("Bio cannot exceed 500 characters.")
+                .When(x => !string.IsNullOrEmpty(x.Bio));
+
+            RuleFor(x => x.Location)
+                .MaximumLength(100).WithMessage("Location cannot exceed 100 characters.")
+                .When(x => !string.IsNullOrEmpty(x.Location));
+
+            RuleFor(x => x.PhoneNumber)
+                .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format.")
+                .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
         }
     }
 }

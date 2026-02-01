@@ -1,5 +1,6 @@
 ﻿using CleanArc.Core.Interfaces;
 using CleanArc.Core.Models.Identity;
+using CleanArc.Core.Primitives;
 using CleanArc.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 
@@ -14,6 +15,32 @@ namespace CleanArc.Services
             _userManager = userManager;
         }
 
+        public async Task<bool> ConfirmEmailAsync(string email, string token)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return false;
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            return result.Succeeded;
+        }
+
+        public async Task<string> GenerateEmailConfirmationTokenAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return string.Empty;
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            return token;
+        }
+
+        public async Task<bool> IsEmailConfirmedAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return false;
+            return await _userManager.IsEmailConfirmedAsync(user);
+        }
+
         public async Task<AuthUser?> LoginUserAsync(string email, string password)
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
@@ -24,8 +51,6 @@ namespace CleanArc.Services
             {
                 return null;
             }
-
-            // Map ApplicationUser (Infrastructure) to AuthUser (Core)
             var roles = await _userManager.GetRolesAsync(user);
             
             return new AuthUser
@@ -38,7 +63,15 @@ namespace CleanArc.Services
             };
         }
 
-        public async Task<(bool Succeeded, string[] Errors)> RegisterUserAsync(string username, string password, string email)
+        public async Task<(bool Succeeded, string[] Errors)> RegisterUserAsync(
+            string username, 
+            string password, 
+            string email,
+            string? fullName = null,
+            string? photoUrl = null,
+            string? location = null,
+            string? bio = null,
+            string? phoneNumber = null)
         {
             if (string.IsNullOrWhiteSpace(email))
                 return (false, new[] { "Email is required." });
@@ -62,7 +95,13 @@ namespace CleanArc.Services
             var newUser = new ApplicationUser
             {
                 UserName = username,
-                Email = email
+                Email = email,
+                EmailConfirmed = false,
+                FullName = fullName,
+                PhotoUrl = photoUrl,
+                location = location,
+                Bio = bio,
+                PhoneNumber = phoneNumber
             };
 
             var result = await _userManager.CreateAsync(newUser, password);
@@ -73,6 +112,40 @@ namespace CleanArc.Services
 
             var errors = result.Errors.Select(e => e.Description).ToArray();
             return (false, errors);
+        }
+
+        public async Task<string> GeneratePasswordResetTokenAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return string.Empty;
+            
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            return token;
+        }
+
+        public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return false;
+            
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            return result.Succeeded;
+        }
+
+        public async Task<bool> ChangePasswordAsync(string userId, string currentPassword, string newPassword)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return false;
+
+            var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(user, currentPassword);
+            if (!isCurrentPasswordValid)
+                return false;
+
+            var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+            return result.Succeeded;
         }
     }
 }

@@ -3,8 +3,11 @@ using CleanArc.Application.Commands.Auth;
 using CleanArc.Application.Commands.Token;
 using CleanArc.Application.Contracts.Responses.Auth;
 using CleanArc.Application.Contracts.Responses.Token;
+using CleanArc.Core.Primitives;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Clean_Arc.Controllers
 {
@@ -51,6 +54,48 @@ namespace Clean_Arc.Controllers
         [HttpPost("logout")]
         public async Task<ActionResult<LogoutResponse>> Logout(LogoutCommand command)
         {
+            var result = await _mediator.Send(command);
+            return result.ToActionResult(this);
+        }
+        [HttpGet("confirm-email")]
+        public async Task<ActionResult<ConfirmEmailResponse>> ConfirmEmail([FromQuery] ConfirmEmailCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.ToActionResult(this);
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<ActionResult<ForgotPasswordResponse>> ForgotPassword(ForgotPasswordCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.ToActionResult(this);
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<ActionResult<ResetPasswordResponse>> ResetPassword(
+            [FromQuery] string email, 
+            [FromQuery] string token, 
+            [FromBody] string newPassword)
+        {
+            var command = new ResetPasswordCommand
+            {
+                Email = email,
+                Token = token,
+                NewPassword = newPassword
+            };
+            var result = await _mediator.Send(command);
+            return result.ToActionResult(this);
+        }
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public async Task<ActionResult<ChangePasswordResponse>> ChangePassword(ChangePasswordCommand command)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            command.UserId = userId;
             var result = await _mediator.Send(command);
             return result.ToActionResult(this);
         }

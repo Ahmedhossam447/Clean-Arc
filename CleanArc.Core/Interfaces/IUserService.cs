@@ -6,5 +6,7 @@ namespace CleanArc.Core.Interfaces
     {
         Task<AuthUser?> GetUserByIdAsync(string userId);
         Task<AuthUser?> GetUserByEmailAsync(string email);
+        Task<AuthUser?> GetProfileAsync(string userId);
+        Task<bool> UpdateProfileAsync(string userId, string? fullName, string? photoUrl, string? location, string? bio, string? phoneNumber);
     }
 }
