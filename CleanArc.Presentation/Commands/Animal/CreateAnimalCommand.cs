@@ -19,5 +19,13 @@ namespace CleanArc.Application.Commands.Animal
         public string? About { get; set; }
 
         public string? Userid { get; set; }
+
+        // MedicalRecord properties
+        public double Weight { get; set; }
+        public double Height { get; set; }
+        public string? BloodType { get; set; }
+        public string? MedicalHistoryNotes { get; set; }
+        public string? Injuries { get; set; }
+        public string? Status { get; set; }
     }
 }

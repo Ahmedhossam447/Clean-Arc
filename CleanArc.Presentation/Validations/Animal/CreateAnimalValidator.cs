@@ -23,9 +23,23 @@ namespace CleanArc.Application.Validations.Animal
             RuleFor(x => x.About).MaximumLength(500).WithMessage("About cannot exceed 500 characters.");
             RuleFor(x => x.Userid)
                 .NotEmpty().WithMessage("User ID is required.");
-              RuleFor(x => x.Photo)
+            RuleFor(x => x.Photo)
                 .MaximumLength(2000).WithMessage("Photo URL cannot exceed 2000 characters.")
                 .NotEmpty().WithMessage("photo is required");
+
+            // MedicalRecord validations
+            RuleFor(x => x.Weight)
+                .GreaterThanOrEqualTo(0).WithMessage("Weight must be greater than or equal to 0.");
+            RuleFor(x => x.Height)
+                .GreaterThanOrEqualTo(0).WithMessage("Height must be greater than or equal to 0.");
+            RuleFor(x => x.BloodType)
+                .MaximumLength(50).WithMessage("Blood type cannot exceed 50 characters.");
+            RuleFor(x => x.MedicalHistoryNotes)
+                .MaximumLength(2000).WithMessage("Medical history notes cannot exceed 2000 characters.");
+            RuleFor(x => x.Injuries)
+                .MaximumLength(500).WithMessage("Injuries cannot exceed 500 characters.");
+            RuleFor(x => x.Status)
+                .MaximumLength(100).WithMessage("Status cannot exceed 100 characters.");
         }
     }
 }

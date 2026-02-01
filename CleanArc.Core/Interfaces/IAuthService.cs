@@ -20,7 +20,7 @@ namespace CleanArc.Core.Interfaces
         
         // Write operations - not cancellable
         Task<string> GenerateEmailConfirmationTokenAsync(string email);
-        Task<bool> ConfirmEmailAsync(string email, string token);
+        Task<(bool Succeeded, string? ErrorMessage)> ConfirmEmailAsync(string email, string token);
         Task<string> GeneratePasswordResetTokenAsync(string email);
         Task<bool> ResetPasswordAsync(string email, string token, string newPassword);
         Task<bool> ChangePasswordAsync(string userId, string currentPassword, string newPassword);

@@ -33,6 +33,16 @@ namespace Clean_Arc.Controllers
             return result.ToActionResult(this);
         }
 
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<PublicProfileResponse>> GetUserProfile(
+            [FromRoute] string userId, 
+            CancellationToken cancellationToken)
+        {
+            var query = new GetUserProfileQuery { UserId = userId };
+            var result = await _mediator.Send(query, cancellationToken);
+            return result.ToActionResult(this);
+        }
+
         [HttpPut("profile")]
         public async Task<ActionResult<ProfileResponse>> UpdateProfile(UpdateProfileCommand command)
         {

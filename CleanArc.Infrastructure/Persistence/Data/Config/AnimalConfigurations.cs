@@ -15,9 +15,9 @@ namespace CleanArc.Infrastructure.Persistence.Data.Config
             builder.Property(a => a.About).HasMaxLength(1000);
             builder.Property(a =>a.Photo).IsRequired();
             builder.Property(a => a.IsAdopted).HasDefaultValue(false);
-            builder.HasMany(a => a.MedicalRecords)
+            builder.HasOne(a => a.MedicalRecord)
                    .WithOne(m => m.Animal)
-                   .HasForeignKey(m => m.Animalid)
+                   .HasForeignKey<MedicalRecord>(m => m.AnimalId)
                    .OnDelete(DeleteBehavior.Cascade);
             builder.HasMany(a => a.Requests)
                 .WithOne(r => r.Animal)

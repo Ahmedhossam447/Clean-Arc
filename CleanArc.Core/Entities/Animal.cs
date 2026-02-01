@@ -15,7 +15,8 @@ public partial class Animal
     public string? About { get; set; }
     public string? Userid { get; set; }
 
-    public virtual ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
+    // One-to-One relationship: Each Animal has ONE MedicalRecord
+    public virtual MedicalRecord? MedicalRecord { get; set; }
     public virtual ICollection<Request> Requests { get; set; } = new List<Request>();
 
     public static class Errors

@@ -1,4 +1,4 @@
-﻿using CleanArc.Application.Commands.Animal;
+using CleanArc.Application.Commands.Animal;
 using CleanArc.Application.Contracts.Responses.Animal;
 using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
@@ -12,7 +12,9 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
         private readonly IRepository<Core.Entites.Animal> _animalRepository;
         private readonly IDistributedCache _cache;
 
-        public CreateAnimalCommandHandler(IRepository<Core.Entites.Animal> animalRepository, IDistributedCache cache)
+        public CreateAnimalCommandHandler(
+            IRepository<Core.Entites.Animal> animalRepository,
+            IDistributedCache cache)
         {
             _animalRepository = animalRepository;
             _cache = cache;
@@ -20,6 +22,8 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
 
         public async Task<CreateAnimalResponse> Handle(CreateAnimalCommand request, CancellationToken cancellationToken)
         {
+            // Create Animal with MedicalRecord navigation property
+            // EF Core will automatically create MedicalRecord in the same transaction
             var animal = new Core.Entites.Animal
             {
                 Name = request.Name,
@@ -31,8 +35,20 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
                 Userid = request.Userid,
                 Gender = request.Gender,
                 Photo = request.Photo,
+                // EF Core will automatically create MedicalRecord when Animal is saved
+                MedicalRecord = new Core.Entites.MedicalRecord
+                {
+                    Weight = request.Weight,
+                    Height = request.Height,
+                    BloodType = request.BloodType ?? string.Empty,
+                    MedicalHistoryNotes = request.MedicalHistoryNotes ?? string.Empty,
+                    Injuries = request.Injuries,
+                    Status = request.Status
+                }
             };
+            
             var animalResponse = await _animalRepository.AddAsync(animal);
+            // Single SaveChangesAsync() - both Animal and MedicalRecord saved atomically
             await _animalRepository.SaveChangesAsync();
 
             // Invalidate the creator's available animals cache (after write - don't use cancellationToken)

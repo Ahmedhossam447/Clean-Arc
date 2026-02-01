@@ -56,7 +56,7 @@ public class AnimalController : ControllerBase
     {
         var query = new GetAnimalByIdQuery { AnimalId = id };
         var result = await _mediator.Send(query, cancellationToken);
-        return result;
+        return result.ToActionResult(this);
     }
 
     [HttpGet]

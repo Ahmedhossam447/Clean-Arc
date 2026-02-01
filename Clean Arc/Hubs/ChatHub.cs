@@ -1,5 +1,6 @@
 ﻿using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
+using MassTransit.Initializers;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Clean_Arc.Hubs
@@ -60,17 +61,11 @@ namespace Clean_Arc.Hubs
             await _messageRepository.AddAsync(messageEntity);
             await _messageRepository.SaveChangesAsync();
 
-            var receiverConnections = await _userConnectionRepository.GetAsync(c => c.UserId == receiverId);
-            var senderConnections = await _userConnectionRepository.GetAsync(c => c.UserId == senderId);
-
-            foreach (var conn in receiverConnections)
-            {
-                await Clients.Client(conn.ConnectionId).SendAsync("ReceiveMessage", messageEntity);
-            }
-            foreach (var conn in senderConnections)
-            {
-                await Clients.Client(conn.ConnectionId).SendAsync("SenderMessage", messageEntity);
-            }
+            var receiverConnectionsIds = (await _userConnectionRepository.GetAsync(c => c.UserId == receiverId)).Select(c=>c.ConnectionId);
+            var senderConnections = (await _userConnectionRepository.GetAsync(c => c.UserId == senderId)).Select(c=>c.ConnectionId);
+            await Clients.Clients(receiverConnectionsIds).SendAsync("ReceiveMessage", messageEntity);
+                await Clients.Clients(senderConnections).SendAsync("SenderMessage", messageEntity);
+            
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)

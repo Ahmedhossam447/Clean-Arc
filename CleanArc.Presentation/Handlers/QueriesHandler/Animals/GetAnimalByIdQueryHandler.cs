@@ -2,11 +2,12 @@ using CleanArc.Application.Contracts.Responses.Animal;
 using CleanArc.Application.Queries.Animal;
 using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
+using CleanArc.Core.Primitives;
 using MediatR;
 
 namespace CleanArc.Application.Handlers.QueriesHandler.Animals
 {
-    public class GetAnimalByIdQueryHandler : IRequestHandler<GetAnimalByIdQuery, ReadAnimalResponse>
+    public class GetAnimalByIdQueryHandler : IRequestHandler<GetAnimalByIdQuery, Result<ReadAnimalResponse>>
     {
         private readonly IRepository<Animal> _animalRepository;
 
@@ -15,12 +16,12 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Animals
             _animalRepository = animalRepository;
         }
 
-        public async Task<ReadAnimalResponse> Handle(GetAnimalByIdQuery request, CancellationToken cancellationToken)
+        public async Task<Result<ReadAnimalResponse>> Handle(GetAnimalByIdQuery request, CancellationToken cancellationToken)
         {
             var animal = await _animalRepository.GetByIdAsync(request.AnimalId, cancellationToken);
             if (animal == null)
             {
-                throw new KeyNotFoundException($"Animal with ID {request.AnimalId} not found.");
+                return Animal.Errors.NotFound;
             }
 
             var response = new ReadAnimalResponse

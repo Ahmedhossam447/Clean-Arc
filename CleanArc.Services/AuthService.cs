@@ -15,13 +15,20 @@ namespace CleanArc.Services
             _userManager = userManager;
         }
 
-        public async Task<bool> ConfirmEmailAsync(string email, string token)
+        public async Task<(bool Succeeded, string? ErrorMessage)> ConfirmEmailAsync(string email, string token)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
-                return false;
+                return (false, "User not found");
+            
             var result = await _userManager.ConfirmEmailAsync(user, token);
-            return result.Succeeded;
+            if (!result.Succeeded)
+            {
+                var errorMessage = string.Join(", ", result.Errors.Select(e => e.Description));
+                return (false, errorMessage);
+            }
+            
+            return (true, null);
         }
 
         public async Task<string> GenerateEmailConfirmationTokenAsync(string email)
