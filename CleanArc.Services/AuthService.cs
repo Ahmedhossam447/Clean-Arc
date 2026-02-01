@@ -33,7 +33,8 @@ namespace CleanArc.Services
             return token;
         }
 
-        public async Task<bool> IsEmailConfirmedAsync(string email)
+        // Read operations - cancellable
+        public async Task<bool> IsEmailConfirmedAsync(string email, CancellationToken cancellationToken = default)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
@@ -41,7 +42,7 @@ namespace CleanArc.Services
             return await _userManager.IsEmailConfirmedAsync(user);
         }
 
-        public async Task<AuthUser?> LoginUserAsync(string email, string password)
+        public async Task<AuthUser?> LoginUserAsync(string email, string password, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
                 return null;

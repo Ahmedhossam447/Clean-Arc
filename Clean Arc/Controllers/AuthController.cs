@@ -58,9 +58,9 @@ namespace Clean_Arc.Controllers
             return result.ToActionResult(this);
         }
         [HttpGet("confirm-email")]
-        public async Task<ActionResult<ConfirmEmailResponse>> ConfirmEmail([FromQuery] ConfirmEmailCommand command)
+        public async Task<ActionResult<ConfirmEmailResponse>> ConfirmEmail([FromQuery] ConfirmEmailCommand command, CancellationToken cancellationToken)
         {
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(command, cancellationToken);
             return result.ToActionResult(this);
         }
 

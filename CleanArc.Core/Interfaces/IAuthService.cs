@@ -13,10 +13,14 @@ namespace CleanArc.Core.Interfaces
             string? location = null,
             string? bio = null,
             string? phoneNumber = null);
-        Task<AuthUser?> LoginUserAsync(string email, string password);
+        
+        // Read operations - cancellable
+        Task<AuthUser?> LoginUserAsync(string email, string password, CancellationToken cancellationToken = default);
+        Task<bool> IsEmailConfirmedAsync(string email, CancellationToken cancellationToken = default);
+        
+        // Write operations - not cancellable
         Task<string> GenerateEmailConfirmationTokenAsync(string email);
         Task<bool> ConfirmEmailAsync(string email, string token);
-        Task<bool> IsEmailConfirmedAsync(string email);
         Task<string> GeneratePasswordResetTokenAsync(string email);
         Task<bool> ResetPasswordAsync(string email, string token, string newPassword);
         Task<bool> ChangePasswordAsync(string userId, string currentPassword, string newPassword);

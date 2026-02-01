@@ -20,7 +20,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Chat
             var messages = await _messageRepository.GetAsync(m =>
                 m.ReceiverId == command.UserId && 
                 m.SenderId == command.SenderId && 
-                !m.IsRead);
+                !m.IsRead, cancellationToken);
 
             foreach (var message in messages)
             {

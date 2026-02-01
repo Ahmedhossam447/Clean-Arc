@@ -22,7 +22,7 @@ public class SearchAnimalsQueryHandler : IRequestHandler<SearchAnimalsQuery, Pag
             (string.IsNullOrEmpty(request.Type) || a.Type == request.Type) &&
             (string.IsNullOrEmpty(request.Breed) || a.Breed == request.Breed) &&
             (string.IsNullOrEmpty(request.Gender) || a.Gender == request.Gender) &&
-            !a.IsAdopted);
+            !a.IsAdopted, cancellationToken);
 
         int totalCount = animals.Count();
         int totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);

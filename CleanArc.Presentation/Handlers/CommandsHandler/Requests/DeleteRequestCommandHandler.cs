@@ -20,7 +20,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 
         public async Task<Result> Handle(DeleteRequestCommand command, CancellationToken cancellationToken)
         {
-            var request = await _requestRepository.GetByIdAsync(command.RequestId);
+            var request = await _requestRepository.GetByIdAsync(command.RequestId, cancellationToken);
 
             if (request == null)
                 return Result.Failure(Request.Errors.NotFound);

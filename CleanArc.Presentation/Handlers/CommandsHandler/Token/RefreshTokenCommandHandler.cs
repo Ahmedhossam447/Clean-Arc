@@ -17,7 +17,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Token
 
         public async Task<Result<RefreshTokenResponse>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
         {
-            var result = await _tokenService.RefreshTokensAsync(request.RefreshToken);
+            var result = await _tokenService.RefreshTokensAsync(request.RefreshToken, cancellationToken);
 
             if (result.IsFailure)
                 return result.Error;

@@ -30,6 +30,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Auth
                 return UserErrors.NotFound;
             }
 
+            // Read after write - don't use cancellationToken (part of write transaction)
             var updatedProfile = await _userService.GetProfileAsync(request.UserId);
             
             if (updatedProfile == null)

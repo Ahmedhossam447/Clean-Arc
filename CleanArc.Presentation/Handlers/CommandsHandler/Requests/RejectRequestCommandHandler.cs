@@ -25,7 +25,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 
         public async Task<Result> Handle(RejectRequestCommand command, CancellationToken cancellationToken)
         {
-            var request = await _requestRepository.GetByIdAsync(command.RequestId);
+            var request = await _requestRepository.GetByIdAsync(command.RequestId, cancellationToken);
 
             if (request == null)
                 return Result.Failure(Request.Errors.NotFound);
@@ -39,7 +39,8 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
             await _requestRepository.SaveChangesAsync();
             await _notificationService.SendNotificationAsync(requesterId, "RequestRejected", new { RequestId = request.Reqid, AnimalId = request.AnimalId });
 
-            await _cache.RemoveAsync($"requests:user:{requesterId}", cancellationToken);
+            // Cache invalidation after write - don't use cancellationToken
+            await _cache.RemoveAsync($"requests:user:{requesterId}");
 
             return Result.Success();
         }

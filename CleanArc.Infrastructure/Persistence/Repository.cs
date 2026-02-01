@@ -18,44 +18,51 @@ namespace CleanArc.Infrastructure.Persistence
             _dbSet = _context.Set<TEntity>();
 
         }
+        // Read operations - cancellable
+        public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return await _dbSet.ToListAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet.Where(predicate).ToListAsync(cancellationToken);
+        }
+
+        public async Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet.FindAsync(new object[] { id }, cancellationToken);
+        }
+
+        // Write operations - NOT cancellable (must complete)
         public async Task<TEntity> AddAsync(TEntity entity)
         {
             await _dbSet.AddAsync(entity);
             return entity;
-        }
-        public async Task<IEnumerable<TEntity>> GetAllAsync()
-        {
-            return await _dbSet.ToListAsync();
-        }
-
-        public async Task<TEntity> GetByIdAsync(int id)
-        {
-            return await _dbSet.FindAsync(id);
         }
 
         public void Update(TEntity entity)
         {
             _dbSet.Update(entity);
         }
+
         public async Task Delete(int id)
         {
-            var Data = await _dbSet.FindAsync(id);
+            var Data = await _dbSet.FindAsync(new object[] { id });
             if (Data != null)
             {
                 _dbSet.Remove(Data);
             }
         }
+
         public int SaveChanges()
         {
           return _context.SaveChanges();
         }
-        public async Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate)
-        {
-            return await _dbSet.Where(predicate).ToListAsync();
-        }
+
         public async Task SaveChangesAsync()
         {
-            await  _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
     }
 }

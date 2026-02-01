@@ -40,36 +40,36 @@ namespace Clean_Arc.Controllers
 
         [Authorize]
         [HttpGet("{id}")]
-        public async Task<ActionResult<RequestResponse>> GetById([FromRoute] int id)
+        public async Task<ActionResult<RequestResponse>> GetById([FromRoute] int id, CancellationToken cancellationToken)
         {
             var query = new GetRequestByIdQuery { RequestId = id };
-            var result = await _mediator.Send(query);
+            var result = await _mediator.Send(query, cancellationToken);
             return result.ToActionResult(this);
         }
 
         [Authorize]
         [HttpGet("my")]
-        public async Task<ActionResult<List<RequestResponse>>> GetMyRequests()
+        public async Task<ActionResult<List<RequestResponse>>> GetMyRequests(CancellationToken cancellationToken)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
             var query = new GetMyRequestsQuery { UserId = userId };
-            var result = await _mediator.Send(query);
+            var result = await _mediator.Send(query, cancellationToken);
             return Ok(result);
         }
 
         [Authorize]
         [HttpGet("received")]
-        public async Task<ActionResult<List<RequestResponse>>> GetReceivedRequests()
+        public async Task<ActionResult<List<RequestResponse>>> GetReceivedRequests(CancellationToken cancellationToken)
         {
             var ownerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(ownerId))
                 return Unauthorized();
 
             var query = new GetReceivedRequestsQuery { OwnerId = ownerId };
-            var result = await _mediator.Send(query);
+            var result = await _mediator.Send(query, cancellationToken);
             return Ok(result);
         }
 

@@ -21,7 +21,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Auth
             var decodedEmail = WebUtility.UrlDecode(request.Email);
             var decodedToken = WebUtility.UrlDecode(request.Token);
             
-            var isConfirmed = await _authService.IsEmailConfirmedAsync(decodedEmail);
+            var isConfirmed = await _authService.IsEmailConfirmedAsync(decodedEmail, cancellationToken);
             if (isConfirmed)
             {
                 return EmailErrors.AlreadyConfirmed;

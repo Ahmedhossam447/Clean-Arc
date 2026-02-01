@@ -17,7 +17,7 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Animals
 
         public async Task<ReadAnimalResponse> Handle(GetAnimalByIdQuery request, CancellationToken cancellationToken)
         {
-            var animal = await _animalRepository.GetByIdAsync(request.AnimalId);
+            var animal = await _animalRepository.GetByIdAsync(request.AnimalId, cancellationToken);
             if (animal == null)
             {
                 throw new KeyNotFoundException($"Animal with ID {request.AnimalId} not found.");

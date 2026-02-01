@@ -35,9 +35,9 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
             var animalResponse = await _animalRepository.AddAsync(animal);
             await _animalRepository.SaveChangesAsync();
 
-            // Invalidate the creator's available animals cache
+            // Invalidate the creator's available animals cache (after write - don't use cancellationToken)
             // Other users' caches will expire naturally (2 min TTL)
-            await _cache.RemoveAsync($"animals:available:{request.Userid}", cancellationToken);
+            await _cache.RemoveAsync($"animals:available:{request.Userid}");
 
             var response = new CreateAnimalResponse
             {

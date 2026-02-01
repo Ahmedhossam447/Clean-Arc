@@ -17,7 +17,7 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Requests
 
         public async Task<Result<RequestResponse>> Handle(GetRequestByIdQuery query, CancellationToken cancellationToken)
         {
-            var request = await _requestRepository.GetByIdAsync(query.RequestId);
+            var request = await _requestRepository.GetByIdAsync(query.RequestId, cancellationToken);
 
             if (request == null)
                 return Core.Entites.Request.Errors.NotFound;

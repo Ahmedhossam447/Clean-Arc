@@ -14,7 +14,8 @@ namespace CleanArc.Services
             _userManager = userManager;
         }
 
-        public async Task<AuthUser?> GetUserByIdAsync(string userId)
+        // Read operations - cancellable
+        public async Task<AuthUser?> GetUserByIdAsync(string userId, CancellationToken cancellationToken = default)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return null;
@@ -22,7 +23,7 @@ namespace CleanArc.Services
             return await MapToAuthUserAsync(user);
         }
 
-        public async Task<AuthUser?> GetUserByEmailAsync(string email)
+        public async Task<AuthUser?> GetUserByEmailAsync(string email, CancellationToken cancellationToken = default)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null) return null;
@@ -30,7 +31,7 @@ namespace CleanArc.Services
             return await MapToAuthUserAsync(user);
         }
 
-        public async Task<AuthUser?> GetProfileAsync(string userId)
+        public async Task<AuthUser?> GetProfileAsync(string userId, CancellationToken cancellationToken = default)
         {
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return null;

@@ -21,7 +21,7 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Chat
             var messages = await _messageRepository.GetAsync(m =>
                 ((m.SenderId == query.UserId && m.ReceiverId == query.OtherUserId) ||
                 (m.SenderId == query.OtherUserId && m.ReceiverId == query.UserId)) &&
-                m.SentAt < beforeDate);
+                m.SentAt < beforeDate, cancellationToken);
 
             return messages
                 .OrderByDescending(m => m.SentAt)

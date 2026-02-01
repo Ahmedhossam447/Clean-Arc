@@ -26,13 +26,13 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
 
         public async Task<Result<DeleteAnimalResponse>> Handle(DeleteAnimalCommand command, CancellationToken cancellationToken)
         {
-            var animal = await _animalRepository.GetByIdAsync(command.AnimalId);
+            var animal = await _animalRepository.GetByIdAsync(command.AnimalId, cancellationToken);
             if (animal == null)
             {
                 return Animal.Errors.NotFound;
             }
 
-            var requests = await _requestRepository.GetAsync(r => r.AnimalId == command.AnimalId);
+            var requests = await _requestRepository.GetAsync(r => r.AnimalId == command.AnimalId, cancellationToken);
             var affectedUserIds = requests.Select(r => r.Useridreq).Distinct().ToList();
 
             foreach (var req in requests)
@@ -43,12 +43,13 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
             await _animalRepository.Delete(animal.AnimalId);
             await _animalRepository.SaveChangesAsync();
 
-            await _cache.RemoveAsync($"animal:{animal.AnimalId}", cancellationToken);
-            await _cache.RemoveAsync($"animals:available:{animal.Userid}", cancellationToken);
+            // Cache invalidation after write - don't use cancellationToken
+            await _cache.RemoveAsync($"animal:{animal.AnimalId}");
+            await _cache.RemoveAsync($"animals:available:{animal.Userid}");
 
             foreach (var userId in affectedUserIds)
             {
-                await _cache.RemoveAsync($"requests:user:{userId}", cancellationToken);
+                await _cache.RemoveAsync($"requests:user:{userId}");
             }
 
             return new DeleteAnimalResponse

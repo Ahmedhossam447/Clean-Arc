@@ -33,15 +33,15 @@ public class AdoptAnimalCommandHandler : IRequestHandler<AdoptAnimalCommand, Res
         AdoptAnimalCommand request,
         CancellationToken cancellationToken)
     {
-        var animal = await _animalRepository.GetByIdAsync(request.AnimalId);
+        var animal = await _animalRepository.GetByIdAsync(request.AnimalId, cancellationToken);
         if (animal == null)
             return Animal.Errors.NotFound;
 
-        var owner = await _userService.GetUserByIdAsync(animal.Userid ?? string.Empty);
+        var owner = await _userService.GetUserByIdAsync(animal.Userid ?? string.Empty, cancellationToken);
         if (owner == null)
             return UserErrors.OwnerNotFound;
 
-        var adopter = await _userService.GetUserByIdAsync(request.AdopterId);
+        var adopter = await _userService.GetUserByIdAsync(request.AdopterId, cancellationToken);
         if (adopter == null)
             return UserErrors.AdopterNotFound;
 
@@ -51,11 +51,12 @@ public class AdoptAnimalCommandHandler : IRequestHandler<AdoptAnimalCommand, Res
 
         await _animalRepository.SaveChangesAsync();
 
+       
         try
         {
-            await _cache.RemoveAsync($"animal:{animal.AnimalId}", cancellationToken);
-            await _cache.RemoveAsync($"animals:available:{request.AdopterId}", cancellationToken);
-            await _cache.RemoveAsync($"animals:available:{owner.Id}", cancellationToken);
+            await _cache.RemoveAsync($"animal:{animal.AnimalId}");
+            await _cache.RemoveAsync($"animals:available:{request.AdopterId}");
+            await _cache.RemoveAsync($"animals:available:{owner.Id}");
         }
         catch
         {

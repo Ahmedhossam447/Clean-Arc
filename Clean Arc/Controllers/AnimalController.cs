@@ -52,24 +52,25 @@ public class AnimalController : ControllerBase
     // GET
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<ReadAnimalResponse>> GetAnimalById([FromRoute] int id)
+    public async Task<ActionResult<ReadAnimalResponse>> GetAnimalById([FromRoute] int id, CancellationToken cancellationToken)
     {
         var query = new GetAnimalByIdQuery { AnimalId = id };
-        var result = await _mediator.Send(query);
+        var result = await _mediator.Send(query, cancellationToken);
         return result;
     }
 
     [HttpGet]
     public async Task<ActionResult<PaginationResponse<ReadAnimalResponse>>> GetAllAnimals(
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
     {
         var query = new GetAllAnimalsQuery
         {
             PageNumber = page,
             PageSize = pageSize
         };
-        var result = await _mediator.Send(query);
+        var result = await _mediator.Send(query, cancellationToken);
         return result;
     }
 
@@ -77,7 +78,8 @@ public class AnimalController : ControllerBase
     public async Task<ActionResult<PaginationResponse<ReadAnimalResponse>>> GetAvailableAnimalsForAdoption(
         [FromRoute] string userId,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
     {
         var query = new GetAvailableAnimalsForAdoptionQuery
         {
@@ -85,7 +87,7 @@ public class AnimalController : ControllerBase
             PageNumber = page,
             PageSize = pageSize
         };
-        var result = await _mediator.Send(query);
+        var result = await _mediator.Send(query, cancellationToken);
         return result;
     }
 
@@ -95,7 +97,8 @@ public class AnimalController : ControllerBase
         [FromQuery] string? breed,
         [FromQuery] string? gender,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
     {
         var query = new SearchAnimalsQuery
         {
@@ -105,7 +108,7 @@ public class AnimalController : ControllerBase
             PageNumber = page,
             PageSize = pageSize
         };
-        var result = await _mediator.Send(query);
+        var result = await _mediator.Send(query, cancellationToken);
         return result;
     }
 
@@ -114,7 +117,8 @@ public class AnimalController : ControllerBase
     public async Task<ActionResult<PaginationResponse<ReadAnimalResponse>>> GetAnimalsByOwner(
         [FromRoute] string ownerId,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        CancellationToken cancellationToken = default)
     {
         var query = new GetAnimalsByOwnerQuery
         {
@@ -122,7 +126,7 @@ public class AnimalController : ControllerBase
             PageNumber = page,
             PageSize = pageSize
         };
-        var result = await _mediator.Send(query);
+        var result = await _mediator.Send(query, cancellationToken);
         return result;
     }
 

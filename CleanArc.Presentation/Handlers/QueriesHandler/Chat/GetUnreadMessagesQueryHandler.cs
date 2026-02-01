@@ -17,7 +17,7 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Chat
         public async Task<List<Message>> Handle(GetUnreadMessagesQuery query, CancellationToken cancellationToken)
         {
             var messages = await _messageRepository.GetAsync(m =>
-                m.ReceiverId == query.UserId && !m.IsRead);
+                m.ReceiverId == query.UserId && !m.IsRead, cancellationToken);
 
             return messages
                 .OrderBy(m => m.SentAt)

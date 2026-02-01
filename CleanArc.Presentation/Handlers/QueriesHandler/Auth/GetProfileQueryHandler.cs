@@ -17,7 +17,7 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Auth
 
         public async Task<Result<ProfileResponse>> Handle(GetProfileQuery request, CancellationToken cancellationToken)
         {
-            var profile = await _userService.GetProfileAsync(request.UserId);
+            var profile = await _userService.GetProfileAsync(request.UserId, cancellationToken);
             
             if (profile == null)
             {

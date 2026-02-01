@@ -18,7 +18,7 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Animals
         }
         public async Task<PaginationResponse<ReadAnimalResponse>> Handle(GetAllAnimalsQuery request, CancellationToken cancellationToken)
         {
-            var animals = await _repository.GetAllAsync();
+            var animals = await _repository.GetAllAsync(cancellationToken);
             int totalCount = animals.Count();
             int TotalPages = (int)Math.Ceiling((double)animals.Count() / request.PageSize);
             animals = animals

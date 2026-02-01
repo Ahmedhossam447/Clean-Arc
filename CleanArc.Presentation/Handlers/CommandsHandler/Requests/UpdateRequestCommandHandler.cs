@@ -21,7 +21,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 
         public async Task<Result<RequestResponse>> Handle(UpdateRequestCommand command, CancellationToken cancellationToken)
         {
-            var request = await _requestRepository.GetByIdAsync(command.RequestId);
+            var request = await _requestRepository.GetByIdAsync(command.RequestId, cancellationToken);
 
             if (request == null)
                 return Request.Errors.NotFound;
@@ -43,9 +43,10 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
             _requestRepository.Update(request);
             await _requestRepository.SaveChangesAsync();
 
-            await _cache.RemoveAsync($"requests:user:{oldRequesterId}", cancellationToken);
+            // Cache invalidation after write - don't use cancellationToken
+            await _cache.RemoveAsync($"requests:user:{oldRequesterId}");
             if (oldRequesterId != request.Useridreq)
-                await _cache.RemoveAsync($"requests:user:{request.Useridreq}", cancellationToken);
+                await _cache.RemoveAsync($"requests:user:{request.Useridreq}");
 
             return new RequestResponse
             {

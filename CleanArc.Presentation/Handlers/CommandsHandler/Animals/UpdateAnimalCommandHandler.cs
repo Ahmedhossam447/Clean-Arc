@@ -20,7 +20,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
 
         public async Task<UpdateAnimalResponse> Handle(UpdateAnimalCommand request, CancellationToken cancellationToken)
         {
-            var animal = await _animalRepository.GetByIdAsync(request.AnimalId);
+            var animal = await _animalRepository.GetByIdAsync(request.AnimalId, cancellationToken);
             if (animal == null)
             {
                 throw new KeyNotFoundException($"Animal with ID {request.AnimalId} not found");
@@ -34,10 +34,10 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
             _animalRepository.Update(animal);
             await _animalRepository.SaveChangesAsync();
 
-            // Invalidate the specific animal cache
-            await _cache.RemoveAsync($"animal:{animal.AnimalId}", cancellationToken);
+            // Invalidate the specific animal cache (after write - don't use cancellationToken)
+            await _cache.RemoveAsync($"animal:{animal.AnimalId}");
             // Invalidate the owner's available animals cache
-            await _cache.RemoveAsync($"animals:available:{animal.Userid}", cancellationToken);
+            await _cache.RemoveAsync($"animals:available:{animal.Userid}");
 
             var response = new UpdateAnimalResponse
             {

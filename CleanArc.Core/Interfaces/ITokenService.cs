@@ -10,8 +10,10 @@ namespace CleanArc.Core.Interfaces
         
         Task<RefreshToken> GenerateRefreshTokenAsync(string userId);
         
-        Task<Result<(string AccessToken, RefreshToken NewRefreshToken)>> RefreshTokensAsync(string refreshToken);
+        // Read operation - cancellable
+        Task<Result<(string AccessToken, RefreshToken NewRefreshToken)>> RefreshTokensAsync(string refreshToken, CancellationToken cancellationToken = default);
         
+        // Write operations - not cancellable
         Task<Result> RevokeRefreshTokenAsync(string refreshToken, string reason = "Logged out");
         
         Task RevokeAllUserTokensAsync(string userId, string reason = "Security revocation");

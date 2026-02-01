@@ -19,7 +19,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Auth
 
         public async Task<LoginResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
-            var authUser = await _authService.LoginUserAsync(request.Email, request.Password);
+            var authUser = await _authService.LoginUserAsync(request.Email, request.Password, cancellationToken);
             
             if (authUser == null)
             {
@@ -29,7 +29,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Auth
                     Errors = new List<string> { UserErrors.InvalidCredentials.Description }
                 };
             }
-            var emailconfirmed = await _authService.IsEmailConfirmedAsync(authUser.Email);
+            var emailconfirmed = await _authService.IsEmailConfirmedAsync(authUser.Email, cancellationToken);
             if (!emailconfirmed)
             {
                 return new LoginResponse

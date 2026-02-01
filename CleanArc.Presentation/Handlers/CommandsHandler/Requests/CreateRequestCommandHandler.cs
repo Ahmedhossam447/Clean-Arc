@@ -26,7 +26,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 
         public async Task<Result<CreateRequestResponse>> Handle(CreateRequestCommand command, CancellationToken cancellationToken)
         {
-            var animal = await _animalRepository.GetByIdAsync(command.AnimalId);
+            var animal = await _animalRepository.GetByIdAsync(command.AnimalId, cancellationToken);
             if (animal == null)
             {
                 return Animal.Errors.NotFound;
@@ -43,7 +43,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
             }
 
             var existingRequests = await _requestRepository.GetAsync(
-                r => r.AnimalId == command.AnimalId && r.Useridreq == command.RequesterId);
+                r => r.AnimalId == command.AnimalId && r.Useridreq == command.RequesterId, cancellationToken);
             
             if (existingRequests.Any())
             {

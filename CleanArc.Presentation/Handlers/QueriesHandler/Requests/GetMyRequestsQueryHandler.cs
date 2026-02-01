@@ -16,7 +16,7 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Requests
 
         public async Task<List<RequestResponse>> Handle(GetMyRequestsQuery query, CancellationToken cancellationToken)
         {
-            var requests = await _requestRepository.GetAsync(r => r.Useridreq == query.UserId);
+            var requests = await _requestRepository.GetAsync(r => r.Useridreq == query.UserId, cancellationToken);
 
             return requests.Select(r => new RequestResponse
             {

@@ -22,14 +22,14 @@ namespace Clean_Arc.Controllers
         }
 
         [HttpGet("profile")]
-        public async Task<ActionResult<ProfileResponse>> GetProfile()
+        public async Task<ActionResult<ProfileResponse>> GetProfile(CancellationToken cancellationToken)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
             var query = new GetProfileQuery { UserId = userId };
-            var result = await _mediator.Send(query);
+            var result = await _mediator.Send(query, cancellationToken);
             return result.ToActionResult(this);
         }
 

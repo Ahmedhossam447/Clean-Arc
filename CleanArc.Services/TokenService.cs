@@ -79,9 +79,10 @@ namespace CleanArc.Services
             return refreshToken;
         }
 
-        public async Task<Result<(string AccessToken, RefreshToken NewRefreshToken)>> RefreshTokensAsync(string refreshToken)
+        // Read operation - cancellable
+        public async Task<Result<(string AccessToken, RefreshToken NewRefreshToken)>> RefreshTokensAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
-            var tokens = await _refreshTokenRepository.GetAsync(t => t.Token == refreshToken);
+            var tokens = await _refreshTokenRepository.GetAsync(t => t.Token == refreshToken, cancellationToken);
             var existingToken = tokens.FirstOrDefault();
 
             if (existingToken == null)
@@ -93,7 +94,7 @@ namespace CleanArc.Services
             if (existingToken.ExpiresAt < DateTime.UtcNow)
                 return TokenErrors.ExpiredToken;
 
-            var user = await _userService.GetUserByIdAsync(existingToken.UserId);
+            var user = await _userService.GetUserByIdAsync(existingToken.UserId, cancellationToken);
             if (user == null)
                 return TokenErrors.UserNotFound;
 

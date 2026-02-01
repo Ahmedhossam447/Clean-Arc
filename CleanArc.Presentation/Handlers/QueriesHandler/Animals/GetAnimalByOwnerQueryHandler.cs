@@ -18,7 +18,7 @@ public class GetAnimalByOwnerQueryHandler : IRequestHandler<GetAnimalsByOwnerQue
 
     public async Task<PaginationResponse<ReadAnimalResponse>> Handle(GetAnimalsByOwnerQuery request, CancellationToken cancellationToken)
     {
-        var animals = await _animalRepository.GetAsync(a => a.Userid == request.OwnerId);
+        var animals = await _animalRepository.GetAsync(a => a.Userid == request.OwnerId, cancellationToken);
 
         int totalCount = animals.Count();
         int totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);

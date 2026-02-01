@@ -24,7 +24,8 @@ namespace Clean_Arc.Controllers
         public async Task<ActionResult<List<Message>>> GetHistory(
             [FromRoute] string otherUserId,
             [FromQuery] DateTime? before,
-            [FromQuery] int limit = 50)
+            [FromQuery] int limit = 50,
+            CancellationToken cancellationToken = default)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -38,19 +39,19 @@ namespace Clean_Arc.Controllers
                 Limit = Math.Min(limit, 100)
             };
 
-            var messages = await _mediator.Send(query);
+            var messages = await _mediator.Send(query, cancellationToken);
             return Ok(messages);
         }
 
         [HttpGet("unread")]
-        public async Task<ActionResult<List<Message>>> GetUnread()
+        public async Task<ActionResult<List<Message>>> GetUnread(CancellationToken cancellationToken = default)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
             var query = new GetUnreadMessagesQuery { UserId = userId };
-            var messages = await _mediator.Send(query);
+            var messages = await _mediator.Send(query, cancellationToken);
             return Ok(messages);
         }
 
