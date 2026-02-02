@@ -4,7 +4,6 @@ using CleanArc;
 using CleanArc.Application;
 using CleanArc.Core.Interfaces;
 using CleanArc.Infrastructure;
-using CleanArc.Services;
 using huzcodes.Extensions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -23,9 +22,6 @@ namespace Clean_Arc
             var connection = builder.Configuration.GetSection("ConnectionStrings:AnimalConnection").Value;
             builder.Services.AddInfrastructureServices(connection,builder.Configuration);
             builder.Services.AddPresentationRegistration();
-
-
-            builder.Services.AddServices();
             builder.Services.AddSignalR();
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<GlobalExceptionHandler>();

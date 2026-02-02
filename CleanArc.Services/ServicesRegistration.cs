@@ -7,11 +7,11 @@ namespace CleanArc.Services
     {
         public static void AddServices(this IServiceCollection services)
         {
-            services.AddScoped<IAnimalServices, AnimalServices>();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<IEmailService, EmailService>();
-            services.AddScoped<IUserService, UserService>();
+            // Note: All services have been moved:
+            // - IAnimalServices -> Registered in AddPresentationRegistration (Application layer)
+            // - IAuthService, IUserService -> Registered in InfrastructureRegistration (Infrastructure layer)
+            // - IEmailService, ITokenService -> Registered in InfrastructureRegistration (Infrastructure layer)
+            // This class can be removed once Program.cs is updated
         }
     }
 }

@@ -1,4 +1,6 @@
 using Clean_Arc.Application.Pipline_Behaviour;
+using CleanArc.Application.Services;
+using CleanArc.Core.Interfaces;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using FluentValidation;
@@ -16,6 +18,9 @@ namespace CleanArc.Application
             services.AddFluentValidation(typeof(AddApplicationRegistration));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestPipline<,>));
+            
+            // Register Application services (only use Core abstractions)
+            services.AddScoped<IAnimalServices, AnimalServices>();
         }
     }
 }

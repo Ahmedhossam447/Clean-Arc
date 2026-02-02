@@ -1,7 +1,6 @@
 <Solution>
   <Folder Name="/Domain/">
     <Project Path="CleanArc.Core/CleanArc.Core.csproj" />
-    <Project Path="CleanArc.Services/CleanArc.Services.csproj" />
   </Folder>
   <Folder Name="/Infrastructure/">
     <Project Path="CleanArc.Infrastructure/CleanArc.Infrastructure.csproj" />

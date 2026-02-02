@@ -32,6 +32,10 @@ public partial class Animal
         public static readonly Error CannotAdoptOwnAnimal = new(
             "Animal.CannotAdoptOwnAnimal",
             "You cannot adopt your own animal.");
+
+        public static readonly Error PhotoUploadFailed = new(
+            "Animal.PhotoUploadFailed",
+            "Failed to upload the animal photo. Please try again.");
     }
 
     public Result Adopt(string adopterId)

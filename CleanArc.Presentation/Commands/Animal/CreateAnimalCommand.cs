@@ -1,9 +1,11 @@
 ﻿using CleanArc.Application.Contracts.Responses.Animal;
+using CleanArc.Core.Primitives;
 using MediatR;
+using System.Text.Json.Serialization;
 
 namespace CleanArc.Application.Commands.Animal
 {
-    public class CreateAnimalCommand :IRequest<CreateAnimalResponse>
+    public class CreateAnimalCommand : IRequest<Result<CreateAnimalResponse>>
     {
         public string? Name { get; set; }
 
@@ -14,8 +16,10 @@ namespace CleanArc.Application.Commands.Animal
         public string? Breed { get; set; }
 
         public string? Gender { get; set; }
-
-        public string? Photo { get; set; }
+        [JsonIgnore]
+        public Stream? Photo { get; set; }
+        [JsonIgnore]
+        public string fileName { get; set; } = string.Empty;
         public string? About { get; set; }
 
         public string? Userid { get; set; }

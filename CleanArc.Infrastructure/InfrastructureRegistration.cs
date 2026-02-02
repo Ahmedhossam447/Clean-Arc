@@ -2,6 +2,7 @@
 using CleanArc.Infrastructure.Identity;
 using CleanArc.Infrastructure.Persistence;
 using CleanArc.Infrastructure.Persistence.Data;
+using CleanArc.Infrastructure.Services;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -87,8 +88,12 @@ namespace CleanArc.Infrastructure
                 });
             });
 
-
-
+            // Register external services (Infrastructure layer)
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IImageService, S3ImageService>();
         }
     }
 }

@@ -22,7 +22,6 @@
     <ProjectReference Include="..\CleanArc.Core\CleanArc.Core.csproj" />
     <ProjectReference Include="..\CleanArc.Infrastructure\CleanArc.Infrastructure.csproj" />
     <ProjectReference Include="..\CleanArc.Presentation\CleanArc.Application.csproj" />
-    <ProjectReference Include="..\CleanArc.Services\CleanArc.Services.csproj" />
   </ItemGroup>
 
   <ItemGroup>

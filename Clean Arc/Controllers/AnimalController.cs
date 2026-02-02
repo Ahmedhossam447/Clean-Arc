@@ -1,4 +1,5 @@
-﻿using Clean_Arc.Extensions;
+﻿using Clean_Arc.Contracts.Request;
+using Clean_Arc.Extensions;
 using CleanArc.Application.Commands.Animal;
 using CleanArc.Application.Contracts.Responses;
 using CleanArc.Application.Contracts.Responses.Animal;
@@ -25,10 +26,28 @@ public class AnimalController : ControllerBase
 
     [Authorize]
     [HttpPost]
-    public async Task<ActionResult<CreateAnimalResponse>> CreateAnimal([FromBody] CreateAnimalCommand command)
+    public async Task<ActionResult<CreateAnimalResponse>> CreateAnimal([FromForm] CreateAnimalRequest request)
     {
+        var command = new CreateAnimalCommand
+        {
+            Name = request.Name,
+            Age = request.Age,
+            Type = request.Type,
+            Breed = request.Breed,
+            Gender = request.Gender,
+            About = request.About,
+            Userid = request.Userid,
+            Weight = request.Weight,
+            Height = request.Height,
+            BloodType = request.BloodType,
+            MedicalHistoryNotes = request.MedicalHistoryNotes,
+            Injuries = request.Injuries,
+            Status = request.Status,
+            Photo = request.Photo?.OpenReadStream(),
+            fileName = request.Photo?.FileName ?? string.Empty
+        };
         var result = await _mediator.Send(command);
-        return result;
+        return result.ToActionResult(this);
     }
 
     [Authorize]
