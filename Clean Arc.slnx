@@ -1,13 +1,15 @@
 <Solution>
+  <Folder Name="/API/">
+    <Project Path="Clean Arc/CleanArc.API.csproj" />
+  </Folder>
+  <Folder Name="/Application/">
+    <Project Path="CleanArc.Presentation/CleanArc.Application.csproj" Id="dce6b8d8-e0fb-4e0e-9e5e-fc640ee9c29f" />
+  </Folder>
   <Folder Name="/Domain/">
     <Project Path="CleanArc.Core/CleanArc.Core.csproj" />
   </Folder>
   <Folder Name="/Infrastructure/">
     <Project Path="CleanArc.Infrastructure/CleanArc.Infrastructure.csproj" />
-  </Folder>
-  <Folder Name="/Presentation/">
-    <Project Path="Clean Arc/CleanArc.API.csproj" />
-    <Project Path="CleanArc.Presentation/CleanArc.Application.csproj" Id="dce6b8d8-e0fb-4e0e-9e5e-fc640ee9c29f" />
   </Folder>
   <Folder Name="/Testing/">
     <Project Path="CleanArc.Testing/CleanArc.Testing.csproj" Id="6d7e5e99-5bd3-47a8-a0fe-ced8c23a9526" />
