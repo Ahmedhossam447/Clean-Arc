@@ -21,6 +21,7 @@ namespace CleanArc.Infrastructure.Persistence.Data.Config
             builder.HasOne<ApplicationUser>()
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
+                .HasPrincipalKey(u => u.Id)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasIndex(x => x.ConnectionId).IsUnique();

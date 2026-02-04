@@ -19,8 +19,15 @@ namespace CleanArc.Application.Validations.Animal
                 .MaximumLength(50).WithMessage("Breed cannot exceed 50 characters.");
             RuleFor(x => x.Gender);
             RuleFor(x => x.About).MaximumLength(500).WithMessage("About cannot exceed 500 characters.");
-            RuleFor(x => x.Photo)
-              .MaximumLength(2000).WithMessage("Photo URL cannot exceed 2000 characters.");
+            RuleFor(x => x.Photo).Cascade(CascadeMode.Stop).NotNull().WithMessage("Photo is required.").Must(p => p.Length <= 5 * 1024 * 1024)
+    .WithMessage("Photo size must be less than or equal to 5 MB.");
+
+            RuleFor(p => p.fileName)
+                    .Must(fileName => fileName != null && (fileName.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                                                           fileName.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                                                           fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase)))
+                    .WithMessage("Photo must be a .jpg, .jpeg, or .png file.");
+
 
         }
     }

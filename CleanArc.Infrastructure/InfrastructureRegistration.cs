@@ -93,6 +93,7 @@ namespace CleanArc.Infrastructure
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IBackgroundJobService,BackgroundJobService>();
             services.AddScoped<IImageService, S3ImageService>();
         }
     }

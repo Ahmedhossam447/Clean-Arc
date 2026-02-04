@@ -8,6 +8,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
+using System.Net;
 
 namespace CleanArc.Infrastructure.Services
 { 
@@ -22,6 +23,7 @@ namespace CleanArc.Infrastructure.Services
         private readonly int MaxWidth;
         private readonly int MaxHeight;
         private readonly int Quality;
+        private readonly AmazonS3Client Client;
         public S3ImageService(IConfiguration configuration, ILogger<S3ImageService> logger)
         {
             _configuration = configuration;
@@ -42,37 +44,40 @@ namespace CleanArc.Infrastructure.Services
             MaxWidth = int.Parse(_configuration["AWS:ImageCompression:MaxWidth"] ?? "1920");
             MaxHeight = int.Parse(_configuration["AWS:ImageCompression:MaxHeight"] ?? "1080");
             Quality = int.Parse(_configuration["AWS:ImageCompression:Quality"] ?? "85");
+            Client = new AmazonS3Client(_accessKey, _secretKey, RegionEndpoint.GetBySystemName(_region));
         }
 
-        public async Task<bool> DeleteImageAsync(string fileUrl)
+        public async Task DeleteImageAsync(string fileUrl)
         {
             try
             {
                 var uri = new Uri(fileUrl);
-                var key = uri.AbsolutePath.TrimStart('/');
-                var client = new AmazonS3Client(_accessKey, _secretKey, RegionEndpoint.GetBySystemName(_region));
-                
+                var rawKey = uri.AbsolutePath.TrimStart('/');
+                var key = WebUtility.UrlDecode(rawKey);
+
                 var deleteRequest = new DeleteObjectRequest
                 {
                     BucketName = _bucketName,
                     Key = key
                 };
                 
-                var response = await client.DeleteObjectAsync(deleteRequest);
-                
-                if (response.HttpStatusCode == System.Net.HttpStatusCode.NoContent || 
+                var response = await Client.DeleteObjectAsync(deleteRequest);
+
+                if (response.HttpStatusCode == System.Net.HttpStatusCode.NoContent ||
                     response.HttpStatusCode == System.Net.HttpStatusCode.OK)
                 {
                     _logger.LogInformation("Image deleted successfully: {Key}", key);
-                    return true;
                 }
-                
-                return false;
+                else
+                {
+
+                    throw new Exception($"S3 Delete failed with status: {response.HttpStatusCode}");
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting image from S3: {FileUrl}", fileUrl);
-                return false;
+                throw;
             }
         }
 
@@ -83,7 +88,6 @@ namespace CleanArc.Infrastructure.Services
             var name = $"{Guid.NewGuid()}_{filename}";
             var compressedImage = await CompressImageAsync(imageStream, filename);
             var contentType = GetContentType(filename);
-            var client = new AmazonS3Client(_accessKey, _secretKey, RegionEndpoint.GetBySystemName(_region));
             
             var putRequest = new PutObjectRequest
             {
@@ -93,7 +97,7 @@ namespace CleanArc.Infrastructure.Services
                 ContentType = contentType
             };
             
-            var response = await client.PutObjectAsync(putRequest);
+            var response = await Client.PutObjectAsync(putRequest);
             
             if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
             {

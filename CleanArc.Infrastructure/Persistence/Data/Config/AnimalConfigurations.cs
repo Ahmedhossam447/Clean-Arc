@@ -1,4 +1,5 @@
 ﻿using CleanArc.Core.Entites;
+using CleanArc.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,6 +16,14 @@ namespace CleanArc.Infrastructure.Persistence.Data.Config
             builder.Property(a => a.About).HasMaxLength(1000);
             builder.Property(a =>a.Photo).IsRequired();
             builder.Property(a => a.IsAdopted).HasDefaultValue(false);
+            
+            // Foreign key to ApplicationUser (owner) - no navigation property in Core
+            builder.HasOne<ApplicationUser>()
+                   .WithMany()
+                   .HasForeignKey(a => a.Userid)
+                   .HasPrincipalKey(u => u.Id)
+                   .OnDelete(DeleteBehavior.Restrict);
+            
             builder.HasOne(a => a.MedicalRecord)
                    .WithOne(m => m.Animal)
                    .HasForeignKey<MedicalRecord>(m => m.AnimalId)

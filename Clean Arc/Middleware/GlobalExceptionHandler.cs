@@ -57,6 +57,14 @@ namespace Clean_Arc.Middleware
                     response.Detail = exception.Message;
                     break;
 
+                case UnauthorizedAccessException:
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    response.Status = (int)HttpStatusCode.Forbidden;
+                    response.Title = "Forbidden";
+                    response.Detail = exception.Message;
+                    _logger.LogWarning("Unauthorized access attempt: {Message}", exception.Message);
+                    break;
+
                 // Note: OperationCanceledException is the parent of TaskCanceledException
                 case OperationCanceledException:
                     context.Response.StatusCode = 499;

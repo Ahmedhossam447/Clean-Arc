@@ -24,11 +24,13 @@ namespace CleanArc.Infrastructure.Persistence.Data.Config
             builder.HasOne<ApplicationUser>()
                 .WithMany()
                 .HasForeignKey(x => x.SenderId)
+                .HasPrincipalKey(u => u.Id)
                 .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne<ApplicationUser>()
                 .WithMany()
                 .HasForeignKey(x => x.ReceiverId)
+                .HasPrincipalKey(u => u.Id)
                 .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasIndex(x => x.SenderId);

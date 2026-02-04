@@ -6,7 +6,7 @@
     <Project Path="CleanArc.Infrastructure/CleanArc.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/Presentation/">
-    <Project Path="Clean Arc/CleanArc.csproj" />
+    <Project Path="Clean Arc/CleanArc.API.csproj" />
     <Project Path="CleanArc.Presentation/CleanArc.Application.csproj" Id="dce6b8d8-e0fb-4e0e-9e5e-fc640ee9c29f" />
   </Folder>
   <Folder Name="/Testing/">

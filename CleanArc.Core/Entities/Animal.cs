@@ -36,6 +36,10 @@ public partial class Animal
         public static readonly Error PhotoUploadFailed = new(
             "Animal.PhotoUploadFailed",
             "Failed to upload the animal photo. Please try again.");
+
+        public static readonly Error Unauthorized = new(
+            "Animal.Unauthorized",
+            "You are not authorized to perform this action on this animal.");
     }
 
     public Result Adopt(string adopterId)

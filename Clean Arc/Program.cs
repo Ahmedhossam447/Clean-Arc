@@ -4,6 +4,8 @@ using CleanArc;
 using CleanArc.Application;
 using CleanArc.Core.Interfaces;
 using CleanArc.Infrastructure;
+using Hangfire;
+using Hangfire.Redis.StackExchange;
 using huzcodes.Extensions.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -27,6 +29,13 @@ namespace Clean_Arc
             builder.Services.AddScoped<GlobalExceptionHandler>();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+            builder.Services.AddHangfire(config => {                 
+            config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                  .UseSimpleAssemblyNameTypeSerializer()
+                  .UseRecommendedSerializerSettings()
+                  .UseRedisStorage(builder.Configuration.GetConnectionString("RedisConnection"));
+            });
+            builder.Services.AddHangfireServer();
             builder.Services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo
@@ -85,6 +94,7 @@ namespace Clean_Arc
                 c.RoutePrefix = "swagger"; // Swagger UI will be available at /swagger
                 c.DisplayRequestDuration();
             });
+            app.UseHangfireDashboard("/jobs");
             app.UseMiddleware<GlobalExceptionHandler>();
             app.UseHttpsRedirection();
             app.UseAuthentication();

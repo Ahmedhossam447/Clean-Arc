@@ -9,5 +9,8 @@ namespace CleanArc.Application.Commands.Animal
     {
         [JsonIgnore]
         public int AnimalId { get; set; }
+
+        [JsonIgnore]
+        public string? UserId { get; set; }
     }
 }

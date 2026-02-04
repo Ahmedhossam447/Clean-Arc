@@ -23,7 +23,15 @@ namespace CleanArc.Application.Validations.Animal
             RuleFor(x => x.About).MaximumLength(500).WithMessage("About cannot exceed 500 characters.");
             RuleFor(x => x.Userid)
                 .NotEmpty().WithMessage("User ID is required.");
+            RuleFor(x => x.Photo).Cascade(CascadeMode.Stop).NotNull().WithMessage("Photo is required.").Must(p=>p.Length <= 5 * 1024 * 1024)
+                .WithMessage("Photo size must be less than or equal to 5 MB.");
 
+            RuleFor(p => p.fileName)
+                    .Must(fileName => fileName != null && (fileName.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                                                           fileName.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                                                           fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase)))
+                    .WithMessage("Photo must be a .jpg, .jpeg, or .png file.");
+            
             // MedicalRecord validations
             RuleFor(x => x.Weight)
                 .GreaterThanOrEqualTo(0).WithMessage("Weight must be greater than or equal to 0.");

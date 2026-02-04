@@ -1,4 +1,4 @@
-﻿using Clean_Arc.Contracts.Request;
+using Clean_Arc.Contracts.Request;
 using Clean_Arc.Extensions;
 using CleanArc.Application.Commands.Animal;
 using CleanArc.Application.Contracts.Responses;
@@ -153,9 +153,25 @@ public class AnimalController : ControllerBase
 
     [Authorize]
     [HttpPut("{id}")]
-    public async Task<ActionResult<UpdateAnimalResponse>> UpdateAnimal(int id, [FromBody] UpdateAnimalCommand command)
+    public async Task<ActionResult<UpdateAnimalResponse>> UpdateAnimal(int id, [FromForm] UpdateAnimalRequest request)
     {
-        command.AnimalId = id;
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var command = new UpdateAnimalCommand
+        {
+            AnimalId = id,
+            UserId = userId,
+            Name = request.Name,
+            Age = request.Age,
+            Type = request.Type,
+            Breed = request.Breed,
+            Gender = request.Gender,
+            About = request.About,
+            Photo = request.Photo?.OpenReadStream(),
+            fileName = request.Photo?.FileName ?? string.Empty
+        };
         var result = await _mediator.Send(command);
         return result;
     }
@@ -166,7 +182,15 @@ public class AnimalController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult<DeleteAnimalResponse>> DeleteAnimal([FromRoute] int id)
     {
-        var command = new DeleteAnimalCommand { AnimalId = id };
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var command = new DeleteAnimalCommand 
+        { 
+            AnimalId = id,
+            UserId = userId
+        };
         var result = await _mediator.Send(command);
         return result.ToActionResult(this);
     }
