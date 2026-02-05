@@ -8,16 +8,16 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Animals;
 
 public class GetAvailableAnimalsForAdoptionHandler : IRequestHandler<GetAvailableAnimalsForAdoptionQuery, PaginationResponse<ReadAnimalResponse>>
 {
-    private readonly IAnimalServices _animalServices;
+    private readonly IAnimalRepository _animalRepository;
 
-    public GetAvailableAnimalsForAdoptionHandler(IAnimalServices animalServices)
+    public GetAvailableAnimalsForAdoptionHandler(IAnimalRepository animalRepository)
     {
-        _animalServices = animalServices;
+        _animalRepository = animalRepository;
     }
 
     public async Task<PaginationResponse<ReadAnimalResponse>> Handle(GetAvailableAnimalsForAdoptionQuery request, CancellationToken cancellationToken)
     {
-        var animals = await _animalServices.GetAvailableAnimalsForAdoption(request.UserId);
+        var animals = await _animalRepository.GetAvailableAnimalsForAdoption(request.UserId);
 
         int totalCount = animals.Count();
         int totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);

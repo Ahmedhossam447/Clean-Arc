@@ -7,6 +7,6 @@ namespace CleanArc.Core.Interfaces
 {
     public interface IBackgroundJobService
     {
-        void EnqueueJob(Expression<Action> methodCall);
+        void EnqueueJob<T>(Expression<Func<T,Task>> methodCall);
     }
 }

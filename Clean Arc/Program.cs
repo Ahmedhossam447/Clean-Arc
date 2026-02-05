@@ -1,12 +1,12 @@
-using Clean_Arc.Hubs;
 using Clean_Arc.Middleware;
-using CleanArc;
 using CleanArc.Application;
 using CleanArc.Core.Interfaces;
 using CleanArc.Infrastructure;
+using CleanArc.Infrastructure.Hubs;
 using Hangfire;
 using Hangfire.Redis.StackExchange;
 using huzcodes.Extensions.Exceptions;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 
@@ -24,8 +24,6 @@ namespace Clean_Arc
             var connection = builder.Configuration.GetSection("ConnectionStrings:AnimalConnection").Value;
             builder.Services.AddInfrastructureServices(connection,builder.Configuration);
             builder.Services.AddPresentationRegistration();
-            builder.Services.AddSignalR();
-            builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<GlobalExceptionHandler>();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();

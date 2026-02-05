@@ -38,6 +38,8 @@ namespace CleanArc.Infrastructure
 
             // Register repositories
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IAnimalRepository, AnimalRepository>();
+            services.AddScoped<IRequestRepository, RequestRepository>();
             services.AddAuthentication(option=>
             {
                 option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -88,6 +90,10 @@ namespace CleanArc.Infrastructure
                 });
             });
 
+            // Register SignalR
+            services.AddSignalR();
+            services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, Hubs.NameUserIdProvider>();
+            
             // Register external services (Infrastructure layer)
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<ITokenService, TokenService>();
@@ -95,6 +101,7 @@ namespace CleanArc.Infrastructure
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IBackgroundJobService,BackgroundJobService>();
             services.AddScoped<IImageService, S3ImageService>();
+            services.AddScoped<INotificationService, NotificationService>();
         }
     }
 }

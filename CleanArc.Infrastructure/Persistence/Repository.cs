@@ -8,7 +8,7 @@ using System.Text;
 
 namespace CleanArc.Infrastructure.Persistence
 {
-    internal class Repository<TEntity> : IRepository<TEntity> where TEntity : class
+    public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
         private readonly AppDbContext _context;
         private readonly DbSet<TEntity> _dbSet;
@@ -22,6 +22,14 @@ namespace CleanArc.Infrastructure.Persistence
         public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             return await _dbSet.ToListAsync(cancellationToken);
+        }
+        public async Task AddRangeAsync(IEnumerable<TEntity> entities)
+        {
+            await _dbSet.AddRangeAsync(entities);
+        }
+        public  void RemoveRange(IEnumerable<TEntity> entities)
+        {
+            _dbSet.RemoveRange(entities);
         }
 
         public async Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)

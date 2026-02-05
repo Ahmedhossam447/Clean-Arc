@@ -8,16 +8,16 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Requests
 {
     public class GetRequestByIdQueryHandler : IRequestHandler<GetRequestByIdQuery, Result<RequestResponse>>
     {
-        private readonly IRepository<Core.Entites.Request> _requestRepository;
+        private readonly IRequestRepository _requestRepository;
 
-        public GetRequestByIdQueryHandler(IRepository<Core.Entites.Request> requestRepository)
+        public GetRequestByIdQueryHandler(IRequestRepository requestRepository)
         {
             _requestRepository = requestRepository;
         }
 
         public async Task<Result<RequestResponse>> Handle(GetRequestByIdQuery query, CancellationToken cancellationToken)
         {
-            var request = await _requestRepository.GetByIdAsync(query.RequestId, cancellationToken);
+            var request = await _requestRepository.GetRequestWithAnimalAsync(query.RequestId, cancellationToken);
 
             if (request == null)
                 return Core.Entites.Request.Errors.NotFound;

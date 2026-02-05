@@ -14,6 +14,8 @@ namespace CleanArc.Core.Interfaces
         
         // Write operations - NOT cancellable (must complete)
         Task<TEntity> AddAsync(TEntity entity);
+        Task AddRangeAsync(IEnumerable<TEntity> entities);
+        void RemoveRange(IEnumerable<TEntity> entities);
         void Update(TEntity entity);
         Task Delete(int id);
         int SaveChanges();

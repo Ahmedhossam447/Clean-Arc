@@ -16,7 +16,8 @@ namespace CleanArc.Infrastructure.Persistence.Data.Config
             builder.Property(a => a.About).HasMaxLength(1000);
             builder.Property(a =>a.Photo).IsRequired();
             builder.Property(a => a.IsAdopted).HasDefaultValue(false);
-            
+            builder.Property(a => a.RowVersion).IsRowVersion();
+
             // Foreign key to ApplicationUser (owner) - no navigation property in Core
             builder.HasOne<ApplicationUser>()
                    .WithMany()

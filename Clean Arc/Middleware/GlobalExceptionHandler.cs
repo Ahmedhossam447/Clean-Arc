@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using FluentValidation;
 using System.Net;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace Clean_Arc.Middleware
 {
@@ -73,6 +74,15 @@ namespace Clean_Arc.Middleware
                     response.Detail = "The operation was cancelled by the user.";
                     _logger.LogInformation("Request cancelled by user.");
                     break;
+
+                case DbUpdateConcurrencyException concurrencyEx:
+                    context.Response.StatusCode = (int)HttpStatusCode.Conflict;
+                    response.Status = (int)HttpStatusCode.Conflict;
+                    response.Title = "Concurrency Conflict";
+                    response.Detail = "The data has been modified by another user since you loaded it. Please reload the page and try again.";
+                    _logger.LogWarning("Concurrency conflict: {Message}", concurrencyEx.Message);
+                    break;
+
 
                 default:
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

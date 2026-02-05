@@ -1,4 +1,5 @@
 using CleanArc.Core.Primitives;
+using System.ComponentModel.DataAnnotations;
 
 namespace CleanArc.Core.Entites;
 
@@ -14,8 +15,7 @@ public partial class Animal
     public bool IsAdopted { get; set; } = false;
     public string? About { get; set; }
     public string? Userid { get; set; }
-
-    // One-to-One relationship: Each Animal has ONE MedicalRecord
+    public byte[] RowVersion { get; set; }
     public virtual MedicalRecord? MedicalRecord { get; set; }
     public virtual ICollection<Request> Requests { get; set; } = new List<Request>();
 

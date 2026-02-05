@@ -52,7 +52,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
             // Delete photo from S3 if it exists
             if (!string.IsNullOrEmpty(animal.Photo))
             {
-                _backgroundJobService.EnqueueJob( ()=> _imageService.DeleteImageAsync(animal.Photo));
+                _backgroundJobService.EnqueueJob<IImageService>(x => x.DeleteImageAsync(animal.Photo));
             }
 
             var requests = await _requestRepository.GetAsync(r => r.AnimalId == command.AnimalId, cancellationToken);
