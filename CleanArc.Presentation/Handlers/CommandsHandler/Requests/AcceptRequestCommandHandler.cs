@@ -55,7 +55,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
             request.Status = "Approved";
             _requestRepository.Update(request);
             await _requestRepository.SaveChangesAsync();
-            await _notificationService.SendNotificationAsync(request.Useridreq, "RequestApproved", new { RequestId = request.Reqid, AnimalId = request.AnimalId });
+            await _notificationService.SendNotificationToUserAsync(request.Useridreq, "RequestApproved", new { RequestId = request.Reqid, AnimalId = request.AnimalId });
 
             // Cache invalidation after write - don't use cancellationToken
             await _cache.RemoveAsync($"requests:user:{request.Useridreq}");

@@ -74,7 +74,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Animals
             await _animalRepository.SaveChangesAsync();
             if (!string.IsNullOrEmpty(oldUrl))
             {
-                _backgroundJobService.EnqueueJob(() => _imageService.DeleteImageAsync(oldUrl));
+                _backgroundJobService.EnqueueJob<IImageService>(x=>x.DeleteImageAsync(oldUrl));
             }
 
             // Invalidate the specific animal cache (after write - don't use cancellationToken)

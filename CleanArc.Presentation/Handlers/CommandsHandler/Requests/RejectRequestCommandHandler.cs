@@ -37,7 +37,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 
             await _requestRepository.Delete(request.Reqid);
             await _requestRepository.SaveChangesAsync();
-            await _notificationService.SendNotificationAsync(requesterId, "RequestRejected", new { RequestId = request.Reqid, AnimalId = request.AnimalId });
+            await _notificationService.SendNotificationToUserAsync(requesterId, "RequestRejected", new { RequestId = request.Reqid, AnimalId = request.AnimalId });
 
             // Cache invalidation after write - don't use cancellationToken
             await _cache.RemoveAsync($"requests:user:{requesterId}");

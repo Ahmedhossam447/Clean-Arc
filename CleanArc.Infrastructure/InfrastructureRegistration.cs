@@ -102,6 +102,7 @@ namespace CleanArc.Infrastructure
             services.AddScoped<IBackgroundJobService,BackgroundJobService>();
             services.AddScoped<IImageService, S3ImageService>();
             services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
     }
 }
