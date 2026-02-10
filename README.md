@@ -18,6 +18,8 @@ Clean Arc              → API layer (controllers, middleware, SignalR hubs)
 - **CQRS Pattern**: Commands and Queries separated using MediatR
 - **Result Pattern**: Functional error handling with `Result<T>` type
 - **Domain-Driven Design**: Rich domain models with business logic
+- **Unit of Work Pattern**: Transaction management for atomic operations
+- **Repository Pattern**: Generic and specialized repositories for data access
 
 ## 🚀 Tech Stack
 
@@ -39,13 +41,15 @@ Clean Arc              → API layer (controllers, middleware, SignalR hubs)
 - ✅ **Animal Management** - Create, read, update, delete animals with photos
 - ✅ **Medical Records** - One-to-one relationship with animals
 - ✅ **Vaccination Tracking** - One-to-many relationship with medical records
-- ✅ **Adoption Requests** - Request system for animal adoption
+- ✅ **Adoption Requests** - Request system for animal adoption with automatic rejection of other pending requests
 - ✅ **User Authentication** - JWT-based auth with refresh tokens
 - ✅ **Real-time Chat** - SignalR-based messaging system
+- ✅ **Real-time Notifications** - SignalR notifications for single or multiple users
 - ✅ **Photo Management** - AWS S3 integration with automatic compression
-- ✅ **Background Jobs** - Hangfire for async photo deletion
+- ✅ **Background Jobs** - Hangfire for async photo deletion and adoption processing
 - ✅ **Caching** - Redis distributed cache with invalidation
 - ✅ **Domain Events** - MassTransit for event-driven architecture
+- ✅ **Transaction Management** - Unit of Work pattern for atomic database operations
 
 ### Security Features
 - ✅ **Authorization Checks** - Users can only modify their own resources
@@ -61,7 +65,6 @@ CleanArc/
 ├── Clean Arc/                    # API Layer
 │   ├── Controllers/              # REST API endpoints
 │   ├── Middleware/               # GlobalExceptionHandler
-│   ├── Hubs/                     # SignalR hubs
 │   └── Contracts/                # Request/Response DTOs
 │
 ├── CleanArc.Core/                # Domain Layer
@@ -79,8 +82,9 @@ CleanArc/
 │   └── Pipeline Behaviour/       # MediatR pipeline behaviors
 │
 └── CleanArc.Infrastructure/      # Infrastructure Layer
-    ├── Persistence/              # EF Core DbContext & configurations
-    ├── Services/                 # External service implementations
+    ├── Persistence/              # EF Core DbContext, repositories, UnitOfWork
+    ├── Services/                 # External service implementations (S3, Email, SignalR)
+    ├── Hubs/                     # SignalR hubs (ChatHub, NameUserIdProvider)
     ├── Identity/                 # ASP.NET Identity
     └── Migrations/                # Database migrations
 ```
@@ -218,9 +222,11 @@ dotnet run --project "Clean Arc"
 - **Animal** ↔ **MedicalRecord**: One-to-One
 - **MedicalRecord** ↔ **Vaccination**: One-to-Many
 - **Animal** ↔ **Request**: One-to-Many
+- **ApplicationUser** ↔ **Notification**: One-to-Many (Cascade Delete)
 - **Animal.Userid** → **ApplicationUser.Id**: Foreign Key (Restrict)
 - **Request.Userid** → **ApplicationUser.Id**: Foreign Key (Restrict)
 - **Request.Useridreq** → **ApplicationUser.Id**: Foreign Key (Restrict)
+- **Notification.UserId** → **ApplicationUser.Id**: Foreign Key (Cascade)
 
 ## 🎯 Key Implementations
 
@@ -233,6 +239,7 @@ dotnet run --project "Clean Arc"
 ### Background Jobs
 - **Hangfire** with Redis storage
 - Photo deletion jobs queued asynchronously
+- Adoption request processing (rejecting other pending requests)
 - Dashboard available at `/jobs`
 
 ### Caching Strategy
@@ -244,6 +251,27 @@ dotnet run --project "Clean Arc"
 - **MassTransit + RabbitMQ** for event publishing
 - Separate queues for different consumers
 - Retry policies configured
+
+### Unit of Work Pattern
+- **Transaction Management**: Atomic operations for complex workflows
+- **Repository Access**: Centralized access to specialized repositories (`IAnimalRepository`, `IRequestRepository`)
+- **Generic Repositories**: Support for any entity via `Repository<T>()`
+- **Transaction Support**: `BeginTransactionAsync`, `CommitTransactionAsync`, `RollbackTransactionAsync`
+
+### Repository Pattern
+- **Generic Repository**: Base `Repository<TEntity>` with common CRUD operations
+- **Specialized Repositories**: 
+  - `AnimalRepository` - `GetAvailableAnimalsForAdoption()`
+  - `RequestRepository` - `GetRequestWithAnimalAsync()`, `GetPendingRequestsForAnimalAsync()`, `RemoveRange()`
+- **Unit of Work Integration**: All repositories share the same `DbContext` for transaction consistency
+
+### SignalR & Notifications
+- **Real-time Chat**: `ChatHub` for user-to-user messaging
+- **Notification Service**: 
+  - `SendNotificationToUserAsync()` - Single user notifications
+  - `SendNotificationAsync()` - Multiple users (broadcast)
+- **User Identification**: Custom `IUserIdProvider` extracts user ID from JWT claims
+- **Infrastructure Layer**: SignalR hubs and services located in Infrastructure for proper dependency flow
 
 ## 🧪 Testing
 
@@ -265,6 +293,9 @@ Unit tests located in `CleanArc.Testing` project:
 - Use `Result<T>` pattern for operations that can fail
 - Domain errors defined in entity `Errors` static class
 - Throw exceptions only for exceptional cases (caught by GlobalExceptionHandler)
+- **Structured Logging**: ILogger for non-critical operation failures (cache, SignalR, events)
+- **Transaction Rollback**: Automatic rollback on exceptions within transactions
+- **Graceful Degradation**: Non-critical operations (cache, notifications) fail gracefully without breaking core functionality
 
 ## 📄 License
 

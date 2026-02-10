@@ -8,17 +8,19 @@ using CleanArc.Core.Primitives;
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 
 namespace CleanArc.Application.Handlers.CommandsHandler.Animals;
 
 public class AdoptAnimalCommandHandler : IRequestHandler<AdoptAnimalCommand, Result<AdoptAnimalResponse>>
 {
-    private readonly IUnitOfWork _Uow;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly IUserService _userService;
     private readonly IDistributedCache _cache;
     private readonly INotificationService _notificationService;
     private readonly IBackgroundJobService _jobService;
+    private readonly ILogger<AdoptAnimalCommandHandler> _logger;
 
     public AdoptAnimalCommandHandler(
         IUnitOfWork unitOfWork,
@@ -26,22 +28,23 @@ public class AdoptAnimalCommandHandler : IRequestHandler<AdoptAnimalCommand, Res
         IUserService userService,
         IDistributedCache cache,
         IBackgroundJobService jobService,
-        INotificationService notificationService)
+        INotificationService notificationService,
+        ILogger<AdoptAnimalCommandHandler> logger)
     {
         _publishEndpoint = publishEndpoint;
         _userService = userService;
         _cache = cache;
-        _Uow = unitOfWork;
+        _unitOfWork = unitOfWork;
         _jobService = jobService;
         _notificationService = notificationService;
+        _logger = logger;
     }
 
     public async Task<Result<AdoptAnimalResponse>> Handle(
         AdoptAnimalCommand request,
         CancellationToken cancellationToken)
     {
- 
-        var animal = await _Uow.AnimalRepository.GetByIdAsync(request.AnimalId, cancellationToken);
+        var animal = await _unitOfWork.AnimalRepository.GetByIdAsync(request.AnimalId, cancellationToken);
         if (animal == null)
             return Animal.Errors.NotFound;
 
@@ -52,52 +55,91 @@ public class AdoptAnimalCommandHandler : IRequestHandler<AdoptAnimalCommand, Res
         var adopter = await _userService.GetUserByIdAsync(request.AdopterId, cancellationToken);
         if (adopter == null)
             return UserErrors.AdopterNotFound;
-        var AcceptedRequest = (await _Uow.RequestRepository.GetAsync(a => a.AnimalId == request.AnimalId && a.Useridreq == request.AdopterId, cancellationToken)).FirstOrDefault();
-        if (AcceptedRequest == null)
+
+        var acceptedRequest = (await _unitOfWork.RequestRepository.GetAsync(
+            a => a.AnimalId == request.AnimalId && a.Useridreq == request.AdopterId, 
+            cancellationToken)).FirstOrDefault();
+        if (acceptedRequest == null)
             return Request.Errors.NotFound;
 
         var adoptResult = animal.Adopt(adopter.Id);
         if (adoptResult.IsFailure)
             return adoptResult.Error;
-        await _Uow.Repository<Notification>().AddAsync(new Notification
-        {
-            UserId = request.AdopterId,
-            Message = $"🎉 Congratulations! You are now the official owner of {animal.Name}!",
-            CreatedAt = DateTime.UtcNow,
-            IsRead = false
-        });
-        await _Uow.SaveChangesAsync();
-        await _notificationService.SendNotificationToUserAsync(
-            request.AdopterId,
-            "ReceiveNotification",
-            $"🎉 Congratulations! You are the new owner of {animal.Name}!"
-        );
-        _jobService.EnqueueJob<IAdoptionBackgroundService>(x =>
-        x.ProcessRejectedRequestsAsync(request.AnimalId,AcceptedRequest.Reqid));
 
-
+        // Begin transaction for atomic operations
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
         try
         {
-            await _cache.RemoveAsync($"animal:{animal.AnimalId}");
-            await _cache.RemoveAsync($"animals:available:{request.AdopterId}");
-            await _cache.RemoveAsync($"animals:available:{owner.Id}");
+            await _unitOfWork.Repository<Notification>().AddAsync(new Notification
+            {
+                UserId = request.AdopterId,
+                Message = $"🎉 Congratulations! You are now the official owner of {animal.Name ?? "this animal"}!",
+                CreatedAt = DateTime.UtcNow,
+                IsRead = false
+            });
+
+            // Commit transaction - saves animal adoption and notification atomically
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
         catch
         {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
         }
 
-        await _publishEndpoint.Publish(new AnimalAdoptedEvent
+        // Send real-time notification (non-critical, can fail without breaking adoption)
+        try
         {
-            AnimalId = animal.AnimalId,
-            AdopterId = adopter.Id,
-            OwnerId = owner.Id,
-            AdoptedAt = DateTime.UtcNow,
-            OwnerEmail = owner.Email,
-            AdopterEmail = adopter.Email,
-            AnimalName = animal.Name,
-            AnimalType = animal.Type,
-            AdopterName = adopter.FullName ?? adopter.UserName
-        }, cancellationToken);
+            await _notificationService.SendNotificationToUserAsync(
+                request.AdopterId,
+                "ReceiveNotification",
+                $"🎉 Congratulations! You are the new owner of {animal.Name ?? "this animal"}!"
+            );
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to send SignalR notification to adopter {AdopterId} for animal {AnimalId}", 
+                request.AdopterId, request.AnimalId);
+        }
+
+        // Enqueue background job to process rejected requests
+        _jobService.EnqueueJob<IAdoptionBackgroundService>(x =>
+            x.ProcessRejectedRequestsAsync(request.AnimalId, acceptedRequest.Reqid));
+
+        // Cache invalidation (non-critical, log but don't fail)
+        try
+        {
+            await _cache.RemoveAsync($"animal:{animal.AnimalId}", cancellationToken);
+            await _cache.RemoveAsync($"animals:available:{request.AdopterId}", cancellationToken);
+            await _cache.RemoveAsync($"animals:available:{owner.Id}", cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to invalidate cache for animal {AnimalId}, adopter {AdopterId}, owner {OwnerId}. " +
+                "Cache will be stale but adoption was successful.", 
+                animal.AnimalId, request.AdopterId, owner.Id);
+        }
+
+        // Publish domain event (non-critical, can fail without breaking adoption)
+        try
+        {
+            await _publishEndpoint.Publish(new AnimalAdoptedEvent
+            {
+                AnimalId = animal.AnimalId,
+                AdopterId = adopter.Id,
+                OwnerId = owner.Id,
+                AdoptedAt = DateTime.UtcNow,
+                OwnerEmail = owner.Email,
+                AdopterEmail = adopter.Email,
+                AnimalName = animal.Name ?? "Unknown",
+                AnimalType = animal.Type ?? "Unknown",
+                AdopterName = adopter.FullName ?? adopter.UserName
+            }, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to publish AnimalAdoptedEvent for animal {AnimalId}", animal.AnimalId);
+        }
 
         return new AdoptAnimalResponse
         {

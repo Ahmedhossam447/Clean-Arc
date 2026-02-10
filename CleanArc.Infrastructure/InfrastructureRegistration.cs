@@ -103,6 +103,10 @@ namespace CleanArc.Infrastructure
             services.AddScoped<IImageService, S3ImageService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddHttpClient<IPaymentService, PaymobService>(client =>
+            {
+                client.BaseAddress = new Uri("https://accept.paymob.com/api/");
+            });
         }
     }
 }
