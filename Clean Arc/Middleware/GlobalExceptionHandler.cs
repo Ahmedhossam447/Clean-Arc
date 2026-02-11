@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using FluentValidation;
 using System.Net;
+using System.Security;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 
@@ -64,6 +65,22 @@ namespace Clean_Arc.Middleware
                     response.Title = "Forbidden";
                     response.Detail = exception.Message;
                     _logger.LogWarning("Unauthorized access attempt: {Message}", exception.Message);
+                    break;
+
+                case SecurityException:
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    response.Status = (int)HttpStatusCode.Unauthorized;
+                    response.Title = "Invalid Signature";
+                    response.Detail = "The request signature is invalid.";
+                    _logger.LogWarning("Invalid security signature: {Message}", exception.Message);
+                    break;
+
+                case InvalidOperationException:
+                    context.Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
+                    response.Status = (int)HttpStatusCode.ServiceUnavailable;
+                    response.Title = "Service Configuration Error";
+                    response.Detail = "A required service is not properly configured.";
+                    _logger.LogError(exception, "Configuration error: {Message}", exception.Message);
                     break;
 
                 // Note: OperationCanceledException is the parent of TaskCanceledException

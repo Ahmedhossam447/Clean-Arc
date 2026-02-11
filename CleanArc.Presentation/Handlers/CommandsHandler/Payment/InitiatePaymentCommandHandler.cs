@@ -1,4 +1,5 @@
 ﻿using CleanArc.Application.Commands.Payment;
+using CleanArc.Core.Entities;
 using CleanArc.Core.Interfaces;
 using CleanArc.Core.Primitives;
 using MediatR;
@@ -13,19 +14,21 @@ namespace CleanArc.Application.Handlers.CommandsHandler
     {
         private readonly IPaymentService _paymentService;
         private readonly IConfiguration _config;
-        public InitiatePaymentCommandHandler(IPaymentService paymentService, IConfiguration config)
+        private readonly IUnitOfWork _unitOfWork;
+        public InitiatePaymentCommandHandler(IPaymentService paymentService, IConfiguration config, IUnitOfWork unitOfWork)
         {
             _paymentService = paymentService;
             _config = config;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result<string>> Handle(InitiatePaymentCommand request, CancellationToken cancellationToken)
         {
             try
             {
-                var AmountCents = request.amount * 100;
-                string authtoken = await _paymentService.GetAuthTokenAsync();
-                int orderid = await _paymentService.CreateOrderAsync(authtoken, AmountCents);
+                var amountCents = request.amount * 100;
+                string authToken = await _paymentService.GetAuthTokenAsync();
+                int orderId = await _paymentService.CreateOrderAsync(authToken, amountCents);
                 // 4. Billing Data (Paymob requires this)
                 // In a real app, you would get this from the User entity or the Request
                 var billingData = new
@@ -45,15 +48,27 @@ namespace CleanArc.Application.Handlers.CommandsHandler
                     state = "Cairo"
                 };
 
-                string paymentkey = await _paymentService.GetPaymentKeyAsync(authtoken, orderid, AmountCents, billingData);
+                string paymentKey = await _paymentService.GetPaymentKeyAsync(authToken, orderId, amountCents, billingData);
+                var transaction = new PaymentTransaction
+                {
+                    PaymobOrderId = orderId,    
+                    UserId = "TestUser123",     
+                    UserEmail = "test@test.com",
+                    Amount = request.amount,    
+                    Currency = "EGP",
+                    Status = "Pending",      
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _unitOfWork.Repository<PaymentTransaction>().AddAsync(transaction);
+                await _unitOfWork.SaveChangesAsync();
                 string iframeId = _config["Paymob:IframeId"];
-                string url = $"https://accept.paymob.com/api/acceptance/iframes/{iframeId}?payment_token={paymentkey}";
+                string url = $"https://accept.paymob.com/api/acceptance/iframes/{iframeId}?payment_token={paymentKey}";
                 return Result<string>.Success(url);
 
             }
             catch (Exception ex)
             {
-                return Result<string>.Failure(new Error("Payment.Failed", ex.Message));
+                return Result<string>.Failure(PaymentTransaction.Errors.Failed);
             }
           
         }

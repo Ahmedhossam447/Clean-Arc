@@ -17,8 +17,10 @@ namespace CleanArc.Infrastructure.Services
         public PaymobService(HttpClient httpClient, IConfiguration config)
         {
             _httpClient = httpClient;
-            _ApiKey = config["Paymob:ApiKey"];
-            _IntegrationId = config["Paymob:IntegrationId"];
+            _ApiKey = config["Paymob:ApiKey"]
+                ?? throw new InvalidOperationException("Paymob:ApiKey not configured");
+            _IntegrationId = config["Paymob:IntegrationId"]
+                ?? throw new InvalidOperationException("Paymob:IntegrationId not configured");
         }
 
         public async Task<int> CreateOrderAsync(string token, decimal AmountCents)

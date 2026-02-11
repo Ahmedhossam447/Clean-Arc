@@ -50,9 +50,15 @@ public static class ResultExtensions
             return controller.Conflict(problemDetails);
         }
 
-        if (error.Code == "User.InvalidCredentials")
+        if (error.Code == "User.InvalidCredentials" ||
+            error.Code.EndsWith(".InvalidSignature"))
         {
             return controller.Unauthorized(problemDetails);
+        }
+
+        if (error.Code.EndsWith(".AlreadyProcessed"))
+        {
+            return controller.Conflict(problemDetails);
         }
 
         return controller.BadRequest(problemDetails);
@@ -77,8 +83,12 @@ public static class ResultExtensions
             return controller.Conflict(problemDetails);
         }
 
-        if (error.Code == "User.InvalidCredentials")
+        if (error.Code == "User.InvalidCredentials" ||
+            error.Code.EndsWith(".InvalidSignature"))
             return controller.Unauthorized(problemDetails);
+
+        if (error.Code.EndsWith(".AlreadyProcessed"))
+            return controller.Conflict(problemDetails);
 
         return controller.BadRequest(problemDetails);
     }

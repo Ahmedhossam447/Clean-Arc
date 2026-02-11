@@ -11,6 +11,7 @@ namespace CleanArc.Infrastructure.Persistence.Data
     {
         public DbSet<Animal> Animals { get; set; }
         public DbSet<MedicalRecord> MedicalRecords { get; set; }
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Vaccination> Vaccinations { get; set; }
         public DbSet<Request> Requests { get; set; }

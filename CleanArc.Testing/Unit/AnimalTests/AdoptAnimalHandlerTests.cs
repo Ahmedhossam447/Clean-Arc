@@ -1,4 +1,5 @@
-﻿using CleanArc.Application.Commands.Animal;
+﻿using Amazon.Runtime.Internal.Util;
+using CleanArc.Application.Commands.Animal;
 using CleanArc.Application.Handlers.CommandsHandler.Animals;
 using CleanArc.Core.Entites;
 using CleanArc.Core.Events;
@@ -9,6 +10,7 @@ using CleanArc.Testing.Unit.Extensions;
 using FluentAssertions;
 using MassTransit;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ReceivedExtensions;
 
@@ -16,26 +18,32 @@ namespace CleanArc.Testing.Unit.AnimalTests
 {
     public class AdoptAnimalHandlerTests
     {
-        private readonly IRepository<Animal> _Repo;
+        private readonly IUnitOfWork _Repo;
         private readonly IPublishEndpoint _PublishEndpoint;
+        private readonly IBackgroundJobService _BackgroundJobService;
         private readonly IUserService _UserService;
+        private readonly INotificationService _NotificationService;
         private readonly IDistributedCache _Cache;
+        private readonly ILogger<AdoptAnimalCommandHandler> _logger;
         private readonly AdoptAnimalCommandHandler _handler;
 
         public AdoptAnimalHandlerTests()
         {
-            _Repo = Substitute.For<IRepository<Animal>>();
+            _Repo = Substitute.For<IUnitOfWork>();
+            _NotificationService = Substitute.For<INotificationService>();
             _PublishEndpoint = Substitute.For<IPublishEndpoint>();
+            _BackgroundJobService = Substitute.For<IBackgroundJobService>();
             _UserService = Substitute.For<IUserService>();
             _Cache = Substitute.For<IDistributedCache>();
-            _handler = new AdoptAnimalCommandHandler(_Repo, _PublishEndpoint, _UserService, _Cache);
+            _logger =Substitute.For<ILogger<AdoptAnimalCommandHandler>>();
+            _handler = new AdoptAnimalCommandHandler(_Repo, _PublishEndpoint, _UserService, _Cache, _BackgroundJobService, _NotificationService,_logger);
         }
         [Fact]
         public async Task AdoptAnimalHandler_should_adopt_whenAvaliable()
         {
             var command = new AdoptAnimalCommand { AdopterId = "a-123", AnimalId = 1 };
             var animal = new Animal { AnimalId = command.AnimalId, IsAdopted = false, Name = "simba", Userid = "o-456" };
-            _Repo.MockGetAnimalByIdAsync(animal);
+            _Repo.AnimalRepository.MockGetAnimalByIdAsync(animal);
             _UserService.MockGetUserByIdAsync(command.AdopterId, "ahmed");
             _UserService.MockGetUserByIdAsync(animal.Userid, "mohamed");
 
@@ -44,7 +52,7 @@ namespace CleanArc.Testing.Unit.AnimalTests
             result.IsSuccess.Should().BeTrue();
             result.Value.animalId.Should().Be(command.AnimalId);
             animal.IsAdopted.Should().BeTrue();
-            await _Repo.Received(1).GetByIdAsync(command.AnimalId);
+            await _Repo.Received(1).AnimalRepository.GetByIdAsync(command.AnimalId);
             await _UserService.Received(2).GetUserByIdAsync(Arg.Any<string>());
             await _PublishEndpoint.Received(1).Publish(Arg.Any<AnimalAdoptedEvent>(), Arg.Any<CancellationToken>());
         }
