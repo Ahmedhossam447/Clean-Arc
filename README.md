@@ -33,6 +33,7 @@ Clean Arc              → API layer (controllers, middleware, SignalR hubs)
 - **MassTransit + RabbitMQ** - Message queue for domain events
 - **AWS S3** - Image storage with compression
 - **Redis** - Distributed caching
+- **Paymob** - Payment gateway integration
 - **Swagger/OpenAPI** - API documentation
 
 ## ✨ Features
@@ -42,6 +43,9 @@ Clean Arc              → API layer (controllers, middleware, SignalR hubs)
 - ✅ **Medical Records** - One-to-one relationship with animals
 - ✅ **Vaccination Tracking** - One-to-many relationship with medical records
 - ✅ **Adoption Requests** - Request system for animal adoption with automatic rejection of other pending requests
+- ✅ **Product Catalog** - Shelters can add/edit/delete products with photos
+- ✅ **Order System** - Buyers can order products with cart support
+- ✅ **Payment Integration** - Paymob payment gateway with webhook processing
 - ✅ **User Authentication** - JWT-based auth with refresh tokens
 - ✅ **Real-time Chat** - SignalR-based messaging system
 - ✅ **Real-time Notifications** - SignalR notifications for single or multiple users
@@ -54,9 +58,18 @@ Clean Arc              → API layer (controllers, middleware, SignalR hubs)
 ### Security Features
 - ✅ **Authorization Checks** - Users can only modify their own resources
 - ✅ **JWT Authentication** - Secure token-based authentication
+- ✅ **HMAC Webhook Validation** - Timing-safe Paymob webhook signature verification
 - ✅ **Input Validation** - FluentValidation on all commands/queries
 - ✅ **Global Exception Handling** - Centralized error handling
 - ✅ **Foreign Key Constraints** - Database-level data integrity
+- ✅ **Optimistic Concurrency** - RowVersion on Product entity
+
+### Concurrency & Data Integrity
+- ✅ **Atomic SQL** - Stock decrement via raw SQL to prevent race conditions
+- ✅ **Lock Ordering** - Order items sorted by ProductId to prevent deadlocks
+- ✅ **Transaction Wrapping** - Multi-product stock decrements are all-or-nothing
+- ✅ **RowVersion** - Prevents stale EF Core overwrites on Product updates
+- ✅ **Duplicate Cart Merging** - Same ProductId entries merged before processing
 
 ## 📁 Project Structure
 
@@ -68,7 +81,7 @@ CleanArc/
 │   └── Contracts/                # Request/Response DTOs
 │
 ├── CleanArc.Core/                # Domain Layer
-│   ├── Entities/                 # Domain entities (Animal, Request, etc.)
+│   ├── Entities/                 # Domain entities (Animal, Product, Order, etc.)
 │   ├── Interfaces/               # Repository & service interfaces
 │   ├── Primitives/               # Result, Error types
 │   └── Events/                   # Domain events
@@ -83,7 +96,7 @@ CleanArc/
 │
 └── CleanArc.Infrastructure/      # Infrastructure Layer
     ├── Persistence/              # EF Core DbContext, repositories, UnitOfWork
-    ├── Services/                 # External service implementations (S3, Email, SignalR)
+    ├── Services/                 # External service implementations (S3, Email, Paymob, SignalR)
     ├── Hubs/                     # SignalR hubs (ChatHub, NameUserIdProvider)
     ├── Identity/                 # ASP.NET Identity
     └── Migrations/                # Database migrations
@@ -97,6 +110,7 @@ CleanArc/
 - Redis Server
 - RabbitMQ Server
 - AWS Account (for S3)
+- Paymob Account (for payments)
 
 ### Configuration
 
@@ -124,6 +138,12 @@ CleanArc/
       "MaxHeight": 1920,
       "Quality": 85
     }
+  },
+  "Paymob": {
+    "ApiKey": "YOUR_PAYMOB_API_KEY",
+    "IntegrationId": "YOUR_INTEGRATION_ID",
+    "IframeId": "YOUR_IFRAME_ID",
+    "HmacSecret": "YOUR_HMAC_SECRET"
   },
   "EmailSettings": {
     "SmtpServer": "smtp.gmail.com",
@@ -175,6 +195,19 @@ dotnet run --project "Clean Arc"
 - `DELETE /api/animal/{id}` - Delete animal **[Authorize]**
 - `POST /api/animal/{animalid}/Adopt` - Adopt an animal **[Authorize]**
 
+### Products (`/api/product`)
+- `POST /api/product` - Create product (with photo) **[Authorize]**
+- `GET /api/product/{id}` - Get product by ID
+- `GET /api/product` - Get all products (paginated)
+- `PUT /api/product/{id}` - Update product (with photo) **[Authorize]**
+- `DELETE /api/product/{id}` - Delete product **[Authorize]**
+
+### Orders (`/api/order`)
+- `POST /api/order` - Create order and get payment URL **[Authorize]**
+
+### Payments (`/api/payment`)
+- `POST /api/payment/webhook` - Paymob webhook (HMAC validated)
+
 ### Medical Records (`/api/medicalrecord`)
 - `GET /api/medicalrecord/animal/{animalId}` - Get medical record by animal ID
 - `PUT /api/medicalrecord/animal/{animalId}` - Update medical record **[Authorize]**
@@ -204,17 +237,25 @@ dotnet run --project "Clean Arc"
 ## 🔐 Security
 
 ### Authorization
-- Users can only **update/delete their own animals**
+- Users can only **update/delete their own animals and products**
 - JWT tokens extracted from `ClaimTypes.NameIdentifier`
 - Authorization checks performed at handler level
+
+### Webhook Security
+- **HMAC-SHA512** validation for Paymob webhooks
+- **Timing-safe comparison** using `CryptographicOperations.FixedTimeEquals` to prevent timing attacks
+- Invalid signatures return `401 Unauthorized`
 
 ### Error Handling
 - **GlobalExceptionHandler** middleware catches all exceptions
 - Returns appropriate HTTP status codes:
   - `400 Bad Request` - Validation errors
+  - `401 Unauthorized` - Invalid signatures
   - `403 Forbidden` - Unauthorized access
   - `404 Not Found` - Resource not found
+  - `409 Conflict` - Already processed / concurrency conflict
   - `500 Internal Server Error` - Server errors
+  - `503 Service Unavailable` - Configuration errors
 
 ## 🗄️ Database Schema
 
@@ -227,8 +268,41 @@ dotnet run --project "Clean Arc"
 - **Request.Userid** → **ApplicationUser.Id**: Foreign Key (Restrict)
 - **Request.Useridreq** → **ApplicationUser.Id**: Foreign Key (Restrict)
 - **Notification.UserId** → **ApplicationUser.Id**: Foreign Key (Cascade)
+- **Product.ShelterId** → **ApplicationUser.Id**: Foreign Key
+- **Order** ↔ **PaymentTransaction**: One-to-One (SetNull on delete)
+- **Order** ↔ **OrderItem**: One-to-Many (Cascade Delete)
+- **Order.BuyerId** → **ApplicationUser.Id**: Foreign Key (Restrict)
+- **OrderItem.ProductId** → **Product.Id**: Foreign Key (Restrict)
+- **OrderItem.ShelterId** → **ApplicationUser.Id**: Foreign Key (Restrict)
 
 ## 🎯 Key Implementations
+
+### Order & Payment Flow
+```
+User → POST /api/order [{productId:1, qty:2}, ...]
+  → Validate stock (soft check)
+  → Merge duplicate cart items
+  → Save Order + PaymentTransaction to DB (Pending)
+  → Call Paymob API → get payment URL
+  → Return CreateOrderResponse with paymentUrl
+
+User → Pays on Paymob iframe
+
+Paymob → POST /api/payment/webhook?hmac=xxx
+  → Validate HMAC signature
+  → Payment success?
+    → Decrement stock (atomic SQL, sorted by ProductId, in transaction)
+    → Mark order "PaymentReceived" ✅
+  → Payment failed?
+    → Mark order "PaymentFailed" ❌ (stock untouched)
+```
+
+### Stock Concurrency Strategy
+- **Atomic SQL**: `UPDATE Products SET StockQuantity = StockQuantity - @qty WHERE Id = @id AND StockQuantity >= @qty` — prevents race conditions
+- **Lock Ordering**: Items sorted by `ProductId` before processing — prevents deadlocks
+- **Transaction Wrapping**: All stock decrements in one transaction — all-or-nothing
+- **RowVersion**: `byte[] RowVersion` on Product — prevents stale EF Core overwrites
+- **DB-First Saving**: Order saved to DB before calling Paymob — prevents orphaned payment orders
 
 ### Photo Management
 - **Upload**: Images compressed and resized before S3 upload
@@ -256,6 +330,7 @@ dotnet run --project "Clean Arc"
 - **Transaction Management**: Atomic operations for complex workflows
 - **Repository Access**: Centralized access to specialized repositories (`IAnimalRepository`, `IRequestRepository`)
 - **Generic Repositories**: Support for any entity via `Repository<T>()`
+- **Raw SQL Support**: `ExecuteSqlRawAsync` for atomic operations that bypass EF Core
 - **Transaction Support**: `BeginTransactionAsync`, `CommitTransactionAsync`, `RollbackTransactionAsync`
 
 ### Repository Pattern
