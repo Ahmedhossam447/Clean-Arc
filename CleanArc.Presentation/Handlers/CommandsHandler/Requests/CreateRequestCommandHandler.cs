@@ -10,23 +10,20 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 {
     public class CreateRequestCommandHandler : IRequestHandler<CreateRequestCommand, Result<CreateRequestResponse>>
     {
-        private readonly IRepository<Request> _requestRepository;
-        private readonly IRepository<Animal> _animalRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IDistributedCache _cache;
 
         public CreateRequestCommandHandler(
-            IRepository<Request> requestRepository, 
-            IRepository<Animal> animalRepository,
+            IUnitOfWork unitOfWork,
             IDistributedCache cache)
         {
-            _requestRepository = requestRepository;
-            _animalRepository = animalRepository;
+            _unitOfWork = unitOfWork;
             _cache = cache;
         }
 
         public async Task<Result<CreateRequestResponse>> Handle(CreateRequestCommand command, CancellationToken cancellationToken)
         {
-            var animal = await _animalRepository.GetByIdAsync(command.AnimalId, cancellationToken);
+            var animal = await _unitOfWork.Repository<Animal>().GetByIdAsync(command.AnimalId, cancellationToken);
             if (animal == null)
             {
                 return Animal.Errors.NotFound;
@@ -42,7 +39,8 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
                 return Request.Errors.CannotRequestOwnAnimal;
             }
 
-            var existingRequests = await _requestRepository.GetAsync(
+            var requestRepo = _unitOfWork.Repository<Request>();
+            var existingRequests = await requestRepo.GetAsync(
                 r => r.AnimalId == command.AnimalId && r.Useridreq == command.RequesterId, cancellationToken);
             
             if (existingRequests.Any())
@@ -58,8 +56,8 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
                 Status = "Pending"
             };
 
-            await _requestRepository.AddAsync(request);
-            await _requestRepository.SaveChangesAsync();
+            await requestRepo.AddAsync(request);
+            await _unitOfWork.SaveChangesAsync();
 
             await _cache.RemoveAsync($"requests:user:{command.RequesterId}");
 

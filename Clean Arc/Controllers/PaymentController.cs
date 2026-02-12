@@ -1,4 +1,4 @@
-﻿using CleanArc.Application.Commands.Payment;
+using CleanArc.Application.Commands.Payment;
 using CleanArc.Application.Dtos;
 using Clean_Arc.Extensions;
 using CleanArc.Core.Entities;
@@ -19,17 +19,6 @@ namespace Clean_Arc.Controllers
         {
             _mediator = mediator;
             _logger = logger;
-        }
-        
-        [HttpPost("initiate")]
-        public async Task<ActionResult<object>> Initiate([FromBody] InitiatePaymentCommand command)
-        {
-            var result = await _mediator.Send(command);
-
-            if (result.IsFailure)
-                return result.ToActionResult(this);
-
-            return Ok(new { url = result.Value });
         }
 
         [HttpPost("webhook")]

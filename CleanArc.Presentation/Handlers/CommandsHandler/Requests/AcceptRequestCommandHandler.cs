@@ -10,18 +10,18 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 {
     public class AcceptRequestCommandHandler : IRequestHandler<AcceptRequestCommand, Result>
     {
-        private readonly IRepository<Request> _requestRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IDistributedCache _cache;
         private readonly IMediator _mediator;
         private readonly INotificationService _notificationService;
 
         public AcceptRequestCommandHandler(
-            IRepository<Request> requestRepository,
+            IUnitOfWork unitOfWork,
             IDistributedCache cache,
             IMediator mediator,
             INotificationService notificationService)
         {
-            _requestRepository = requestRepository;
+            _unitOfWork = unitOfWork;
             _cache = cache;
             _mediator = mediator;
             _notificationService = notificationService;
@@ -29,7 +29,8 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 
         public async Task<Result> Handle(AcceptRequestCommand command, CancellationToken cancellationToken)
         {
-            var request = await _requestRepository.GetByIdAsync(command.RequestId, cancellationToken);
+            var requestRepo = _unitOfWork.Repository<Request>();
+            var request = await requestRepo.GetByIdAsync(command.RequestId, cancellationToken);
 
             if (request == null)
                 return Result.Failure(Request.Errors.NotFound);
@@ -51,13 +52,11 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
             if (adoptResult.IsFailure)
                 return Result.Failure(adoptResult.Error);
 
-            // Update request status
             request.Status = "Approved";
-            _requestRepository.Update(request);
-            await _requestRepository.SaveChangesAsync();
+            requestRepo.Update(request);
+            await _unitOfWork.SaveChangesAsync();
             await _notificationService.SendNotificationToUserAsync(request.Useridreq, "RequestApproved", new { RequestId = request.Reqid, AnimalId = request.AnimalId });
 
-            // Cache invalidation after write - don't use cancellationToken
             await _cache.RemoveAsync($"requests:user:{request.Useridreq}");
 
             return Result.Success();

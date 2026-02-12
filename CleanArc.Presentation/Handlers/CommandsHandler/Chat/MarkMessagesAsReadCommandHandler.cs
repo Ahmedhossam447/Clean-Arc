@@ -8,16 +8,17 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Chat
 {
     public class MarkMessagesAsReadCommandHandler : IRequestHandler<MarkMessagesAsReadCommand, Result>
     {
-        private readonly IRepository<Message> _messageRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public MarkMessagesAsReadCommandHandler(IRepository<Message> messageRepository)
+        public MarkMessagesAsReadCommandHandler(IUnitOfWork unitOfWork)
         {
-            _messageRepository = messageRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result> Handle(MarkMessagesAsReadCommand command, CancellationToken cancellationToken)
         {
-            var messages = await _messageRepository.GetAsync(m =>
+            var messageRepo = _unitOfWork.Repository<Message>();
+            var messages = await messageRepo.GetAsync(m =>
                 m.ReceiverId == command.UserId && 
                 m.SenderId == command.SenderId && 
                 !m.IsRead, cancellationToken);
@@ -25,10 +26,10 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Chat
             foreach (var message in messages)
             {
                 message.IsRead = true;
-                _messageRepository.Update(message);
+                messageRepo.Update(message);
             }
 
-            await _messageRepository.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
             return Result.Success();
         }

@@ -1,4 +1,4 @@
-﻿using CleanArc.Application.Contracts.Responses;
+using CleanArc.Application.Contracts.Responses;
 using CleanArc.Application.Contracts.Responses.Animal;
 using CleanArc.Application.Queries.Animal;
 using CleanArc.Core.Entites;
@@ -9,16 +9,16 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Animals;
 
 public class GetAnimalByOwnerQueryHandler : IRequestHandler<GetAnimalsByOwnerQuery, PaginationResponse<ReadAnimalResponse>>
 {
-    private readonly IRepository<Animal> _animalRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public GetAnimalByOwnerQueryHandler(IRepository<Animal> animalRepository)
+    public GetAnimalByOwnerQueryHandler(IUnitOfWork unitOfWork)
     {
-        _animalRepository = animalRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<PaginationResponse<ReadAnimalResponse>> Handle(GetAnimalsByOwnerQuery request, CancellationToken cancellationToken)
     {
-        var animals = await _animalRepository.GetAsync(a => a.Userid == request.OwnerId, cancellationToken);
+        var animals = await _unitOfWork.Repository<Animal>().GetAsync(a => a.Userid == request.OwnerId, cancellationToken);
 
         int totalCount = animals.Count();
         int totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);

@@ -7,18 +7,18 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Chat
 {
     public class GetChatHistoryQueryHandler : IRequestHandler<GetChatHistoryQuery, List<Message>>
     {
-        private readonly IRepository<Message> _messageRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetChatHistoryQueryHandler(IRepository<Message> messageRepository)
+        public GetChatHistoryQueryHandler(IUnitOfWork unitOfWork)
         {
-            _messageRepository = messageRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<Message>> Handle(GetChatHistoryQuery query, CancellationToken cancellationToken)
         {
             var beforeDate = query.BeforeDate ?? DateTime.UtcNow;
 
-            var messages = await _messageRepository.GetAsync(m =>
+            var messages = await _unitOfWork.Repository<Message>().GetAsync(m =>
                 ((m.SenderId == query.UserId && m.ReceiverId == query.OtherUserId) ||
                 (m.SenderId == query.OtherUserId && m.ReceiverId == query.UserId)) &&
                 m.SentAt < beforeDate, cancellationToken);

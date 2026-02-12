@@ -9,16 +9,16 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Animals
 {
     public class GetAnimalByIdQueryHandler : IRequestHandler<GetAnimalByIdQuery, Result<ReadAnimalResponse>>
     {
-        private readonly IRepository<Animal> _animalRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetAnimalByIdQueryHandler(IRepository<Animal> animalRepository)
+        public GetAnimalByIdQueryHandler(IUnitOfWork unitOfWork)
         {
-            _animalRepository = animalRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result<ReadAnimalResponse>> Handle(GetAnimalByIdQuery request, CancellationToken cancellationToken)
         {
-            var animal = await _animalRepository.GetByIdAsync(request.AnimalId, cancellationToken);
+            var animal = await _unitOfWork.Repository<Animal>().GetByIdAsync(request.AnimalId, cancellationToken);
             if (animal == null)
             {
                 return Animal.Errors.NotFound;
@@ -41,4 +41,3 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Animals
         }
     }
 }
-

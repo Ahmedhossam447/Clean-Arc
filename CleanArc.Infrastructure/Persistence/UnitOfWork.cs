@@ -1,6 +1,7 @@
-﻿using CleanArc.Core.Entites;
+using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using CleanArc.Infrastructure.Persistence.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections;
@@ -113,6 +114,11 @@ namespace CleanArc.Infrastructure.Persistence
         public async Task<int> SaveChangesAsync(CancellationToken token = default)
         {
             return await _context.SaveChangesAsync(token);
+        }
+
+        public async Task<int> ExecuteSqlRawAsync(string sql, params object[] parameters)
+        {
+            return await _context.Database.ExecuteSqlRawAsync(sql, parameters);
         }
     }
 }

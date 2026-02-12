@@ -1,24 +1,25 @@
-﻿using CleanArc.Application.Contracts.Requests;
+using CleanArc.Application.Contracts.Requests;
 using CleanArc.Application.Contracts.Responses;
 using CleanArc.Application.Contracts.Responses.Animal;
 using CleanArc.Application.Queries.Animal;
 using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using MediatR;
-using System.Linq;
 
 namespace CleanArc.Application.Handlers.QueriesHandler.Animals
 {
-    public class GetAllAnimalsQueryHandler : IRequestHandler<GetAllAnimalsQuery,PaginationResponse<ReadAnimalResponse>>
+    public class GetAllAnimalsQueryHandler : IRequestHandler<GetAllAnimalsQuery, PaginationResponse<ReadAnimalResponse>>
     {
-        private readonly IRepository<Animal> _repository;
-        public GetAllAnimalsQueryHandler(IRepository<Animal> repository)
+        private readonly IUnitOfWork _unitOfWork;
+
+        public GetAllAnimalsQueryHandler(IUnitOfWork unitOfWork)
         {
-            _repository = repository;
+            _unitOfWork = unitOfWork;
         }
+
         public async Task<PaginationResponse<ReadAnimalResponse>> Handle(GetAllAnimalsQuery request, CancellationToken cancellationToken)
         {
-            var animals = await _repository.GetAllAsync(cancellationToken);
+            var animals = await _unitOfWork.Repository<Animal>().GetAllAsync(cancellationToken);
             int totalCount = animals.Count();
             int TotalPages = (int)Math.Ceiling((double)animals.Count() / request.PageSize);
             animals = animals
@@ -52,7 +53,6 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Animals
             };
 
             return response;
-
         }
     }
 }

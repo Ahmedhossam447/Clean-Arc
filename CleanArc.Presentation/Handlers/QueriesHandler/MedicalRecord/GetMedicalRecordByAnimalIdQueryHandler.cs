@@ -1,5 +1,6 @@
 using CleanArc.Application.Contracts.Responses.MedicalRecord;
 using CleanArc.Application.Queries.MedicalRecord;
+using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using CleanArc.Core.Primitives;
 using MediatR;
@@ -8,21 +9,16 @@ namespace CleanArc.Application.Handlers.QueriesHandler.MedicalRecord
 {
     public class GetMedicalRecordByAnimalIdQueryHandler : IRequestHandler<GetMedicalRecordByAnimalIdQuery, Result<MedicalRecordResponse>>
     {
-        private readonly IRepository<Core.Entites.MedicalRecord> _medicalRecordRepository;
-        private readonly IRepository<Core.Entites.Vaccination> _vaccinationRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetMedicalRecordByAnimalIdQueryHandler(
-            IRepository<Core.Entites.MedicalRecord> medicalRecordRepository,
-            IRepository<Core.Entites.Vaccination> vaccinationRepository)
+        public GetMedicalRecordByAnimalIdQueryHandler(IUnitOfWork unitOfWork)
         {
-            _medicalRecordRepository = medicalRecordRepository;
-            _vaccinationRepository = vaccinationRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result<MedicalRecordResponse>> Handle(GetMedicalRecordByAnimalIdQuery request, CancellationToken cancellationToken)
         {
-            // Get MedicalRecord by AnimalId using repository
-            var medicalRecords = await _medicalRecordRepository.GetAsync(
+            var medicalRecords = await _unitOfWork.Repository<Core.Entites.MedicalRecord>().GetAsync(
                 m => m.AnimalId == request.AnimalId, cancellationToken);
             var medicalRecord = medicalRecords.FirstOrDefault();
 
@@ -31,8 +27,7 @@ namespace CleanArc.Application.Handlers.QueriesHandler.MedicalRecord
                 return Core.Entites.MedicalRecord.Errors.NotFound;
             }
 
-            // Get Vaccinations separately using repository
-            var vaccinations = await _vaccinationRepository.GetAsync(
+            var vaccinations = await _unitOfWork.Repository<Core.Entites.Vaccination>().GetAsync(
                 v => v.MedicalRecordId == medicalRecord.Id, cancellationToken);
 
             var response = new MedicalRecordResponse

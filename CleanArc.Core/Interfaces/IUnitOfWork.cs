@@ -1,4 +1,4 @@
-﻿using CleanArc.Core.Entites;
+using CleanArc.Core.Entites;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +15,7 @@ namespace CleanArc.Core.Interfaces
         Task BeginTransactionAsync(CancellationToken token = default);
         Task CommitTransactionAsync(CancellationToken token = default);
         Task RollbackTransactionAsync(CancellationToken token = default);
+        Task<int> ExecuteSqlRawAsync(string sql, params object[] parameters);
 
     }
 }

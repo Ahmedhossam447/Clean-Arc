@@ -9,16 +9,16 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Animals;
 
 public class SearchAnimalsQueryHandler : IRequestHandler<SearchAnimalsQuery, PaginationResponse<ReadAnimalResponse>>
 {
-    private readonly IRepository<Animal> _animalRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public SearchAnimalsQueryHandler(IRepository<Animal> animalRepository)
+    public SearchAnimalsQueryHandler(IUnitOfWork unitOfWork)
     {
-        _animalRepository = animalRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<PaginationResponse<ReadAnimalResponse>> Handle(SearchAnimalsQuery request, CancellationToken cancellationToken)
     {
-        var animals = await _animalRepository.GetAsync(a =>
+        var animals = await _unitOfWork.Repository<Animal>().GetAsync(a =>
             (string.IsNullOrEmpty(request.Type) || a.Type == request.Type) &&
             (string.IsNullOrEmpty(request.Breed) || a.Breed == request.Breed) &&
             (string.IsNullOrEmpty(request.Gender) || a.Gender == request.Gender) &&

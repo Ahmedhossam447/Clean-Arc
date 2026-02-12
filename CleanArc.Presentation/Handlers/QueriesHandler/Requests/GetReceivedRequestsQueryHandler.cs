@@ -8,16 +8,16 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Requests
 {
     public class GetReceivedRequestsQueryHandler : IRequestHandler<GetReceivedRequestsQuery, List<RequestResponse>>
     {
-        private readonly IRepository<Request> _requestRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetReceivedRequestsQueryHandler(IRepository<Request> requestRepository)
+        public GetReceivedRequestsQueryHandler(IUnitOfWork unitOfWork)
         {
-            _requestRepository = requestRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<RequestResponse>> Handle(GetReceivedRequestsQuery query, CancellationToken cancellationToken)
         {
-            var requests = await _requestRepository.GetAsync(r => r.Userid == query.OwnerId, cancellationToken);
+            var requests = await _unitOfWork.Repository<Request>().GetAsync(r => r.Userid == query.OwnerId, cancellationToken);
 
             return requests.Select(r => new RequestResponse
             {

@@ -16,6 +16,7 @@
   <ItemGroup>
     <Folder Include="Commands\Request\" />
     <Folder Include="Contracts\Requests\Animal\" />
+    <Folder Include="Handlers\CommandsHandler\Order\" />
   </ItemGroup>
 
   <ItemGroup>

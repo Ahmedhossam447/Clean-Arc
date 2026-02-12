@@ -10,24 +10,20 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Vaccination
 {
     public class AddVaccinationCommandHandler : IRequestHandler<AddVaccinationCommand, Result<VaccinationResponse>>
     {
-        private readonly IRepository<Core.Entites.MedicalRecord> _medicalRecordRepository;
-        private readonly IRepository<Core.Entites.Vaccination> _vaccinationRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IDistributedCache _cache;
 
         public AddVaccinationCommandHandler(
-            IRepository<Core.Entites.MedicalRecord> medicalRecordRepository,
-            IRepository<Core.Entites.Vaccination> vaccinationRepository,
+            IUnitOfWork unitOfWork,
             IDistributedCache cache)
         {
-            _medicalRecordRepository = medicalRecordRepository;
-            _vaccinationRepository = vaccinationRepository;
+            _unitOfWork = unitOfWork;
             _cache = cache;
         }
 
         public async Task<Result<VaccinationResponse>> Handle(AddVaccinationCommand request, CancellationToken cancellationToken)
         {
-            // Get MedicalRecord by AnimalId using repository
-            var medicalRecords = await _medicalRecordRepository.GetAsync(
+            var medicalRecords = await _unitOfWork.Repository<Core.Entites.MedicalRecord>().GetAsync(
                 m => m.AnimalId == request.AnimalId, cancellationToken);
             var medicalRecord = medicalRecords.FirstOrDefault();
 
@@ -44,10 +40,9 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Vaccination
                 ExpiryDate = request.ExpiryDate
             };
 
-            await _vaccinationRepository.AddAsync(vaccination);
-            await _vaccinationRepository.SaveChangesAsync();
+            await _unitOfWork.Repository<Core.Entites.Vaccination>().AddAsync(vaccination);
+            await _unitOfWork.SaveChangesAsync();
 
-            // Invalidate cache (after write - don't use cancellationToken)
             await _cache.RemoveAsync($"medicalrecord:animal:{request.AnimalId}");
             await _cache.RemoveAsync($"animal:{request.AnimalId}");
 

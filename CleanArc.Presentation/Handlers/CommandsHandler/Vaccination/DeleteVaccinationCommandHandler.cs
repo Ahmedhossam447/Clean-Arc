@@ -1,4 +1,5 @@
 using CleanArc.Application.Commands.Vaccination;
+using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using CleanArc.Core.Primitives;
 using MediatR;
@@ -8,37 +9,33 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Vaccination
 {
     public class DeleteVaccinationCommandHandler : IRequestHandler<DeleteVaccinationCommand, Result>
     {
-        private readonly IRepository<Core.Entites.Vaccination> _vaccinationRepository;
-        private readonly IRepository<Core.Entites.MedicalRecord> _medicalRecordRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IDistributedCache _cache;
 
         public DeleteVaccinationCommandHandler(
-            IRepository<Core.Entites.Vaccination> vaccinationRepository,
-            IRepository<Core.Entites.MedicalRecord> medicalRecordRepository,
+            IUnitOfWork unitOfWork,
             IDistributedCache cache)
         {
-            _vaccinationRepository = vaccinationRepository;
-            _medicalRecordRepository = medicalRecordRepository;
+            _unitOfWork = unitOfWork;
             _cache = cache;
         }
 
         public async Task<Result> Handle(DeleteVaccinationCommand request, CancellationToken cancellationToken)
         {
-            var vaccination = await _vaccinationRepository.GetByIdAsync(request.VaccinationId, cancellationToken);
+            var vaccinationRepo = _unitOfWork.Repository<Core.Entites.Vaccination>();
+            var vaccination = await vaccinationRepo.GetByIdAsync(request.VaccinationId, cancellationToken);
 
             if (vaccination == null)
             {
                 return Core.Entites.Vaccination.Errors.NotFound;
             }
 
-            // Get MedicalRecord to find AnimalId for cache invalidation
-            var medicalRecord = await _medicalRecordRepository.GetByIdAsync(vaccination.MedicalRecordId, cancellationToken);
+            var medicalRecord = await _unitOfWork.Repository<Core.Entites.MedicalRecord>().GetByIdAsync(vaccination.MedicalRecordId, cancellationToken);
             var animalId = medicalRecord?.AnimalId ?? 0;
 
-            await _vaccinationRepository.Delete(request.VaccinationId);
-            await _vaccinationRepository.SaveChangesAsync();
+            await vaccinationRepo.Delete(request.VaccinationId);
+            await _unitOfWork.SaveChangesAsync();
 
-            // Invalidate cache (after write - don't use cancellationToken)
             if (animalId > 0)
             {
                 await _cache.RemoveAsync($"medicalrecord:animal:{animalId}");

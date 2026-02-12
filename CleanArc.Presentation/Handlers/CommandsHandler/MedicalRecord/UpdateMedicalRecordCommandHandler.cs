@@ -1,5 +1,6 @@
 using CleanArc.Application.Commands.MedicalRecord;
 using CleanArc.Application.Contracts.Responses.MedicalRecord;
+using CleanArc.Core.Entites;
 using CleanArc.Core.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Caching.Distributed;
@@ -8,24 +9,21 @@ namespace CleanArc.Application.Handlers.CommandsHandler.MedicalRecord
 {
     public class UpdateMedicalRecordCommandHandler : IRequestHandler<UpdateMedicalRecordCommand, MedicalRecordResponse>
     {
-        private readonly IRepository<Core.Entites.MedicalRecord> _medicalRecordRepository;
-        private readonly IRepository<Core.Entites.Vaccination> _vaccinationRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IDistributedCache _cache;
 
         public UpdateMedicalRecordCommandHandler(
-            IRepository<Core.Entites.MedicalRecord> medicalRecordRepository,
-            IRepository<Core.Entites.Vaccination> vaccinationRepository,
+            IUnitOfWork unitOfWork,
             IDistributedCache cache)
         {
-            _medicalRecordRepository = medicalRecordRepository;
-            _vaccinationRepository = vaccinationRepository;
+            _unitOfWork = unitOfWork;
             _cache = cache;
         }
 
         public async Task<MedicalRecordResponse> Handle(UpdateMedicalRecordCommand request, CancellationToken cancellationToken)
         {
-            // Get MedicalRecord by AnimalId using repository
-            var medicalRecords = await _medicalRecordRepository.GetAsync(
+            var medicalRecordRepo = _unitOfWork.Repository<Core.Entites.MedicalRecord>();
+            var medicalRecords = await medicalRecordRepo.GetAsync(
                 m => m.AnimalId == request.AnimalId, cancellationToken);
             var medicalRecord = medicalRecords.FirstOrDefault();
 
@@ -34,7 +32,6 @@ namespace CleanArc.Application.Handlers.CommandsHandler.MedicalRecord
                 throw new KeyNotFoundException($"Medical record for Animal ID {request.AnimalId} not found.");
             }
 
-            // Update only provided fields
             if (request.Weight.HasValue)
                 medicalRecord.Weight = request.Weight.Value;
             
@@ -53,14 +50,12 @@ namespace CleanArc.Application.Handlers.CommandsHandler.MedicalRecord
             if (request.Status != null)
                 medicalRecord.Status = request.Status;
 
-            _medicalRecordRepository.Update(medicalRecord);
-            await _medicalRecordRepository.SaveChangesAsync();
+            medicalRecordRepo.Update(medicalRecord);
+            await _unitOfWork.SaveChangesAsync();
 
-            // Get Vaccinations separately for response
-            var vaccinations = await _vaccinationRepository.GetAsync(
+            var vaccinations = await _unitOfWork.Repository<Core.Entites.Vaccination>().GetAsync(
                 v => v.MedicalRecordId == medicalRecord.Id, cancellationToken);
 
-            // Invalidate cache (after write - don't use cancellationToken)
             await _cache.RemoveAsync($"medicalrecord:animal:{request.AnimalId}");
             await _cache.RemoveAsync($"animal:{request.AnimalId}");
 

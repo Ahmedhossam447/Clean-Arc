@@ -9,18 +9,19 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 {
     public class DeleteRequestCommandHandler : IRequestHandler<DeleteRequestCommand, Result>
     {
-        private readonly IRepository<Request> _requestRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IDistributedCache _cache;
 
-        public DeleteRequestCommandHandler(IRepository<Request> requestRepository, IDistributedCache cache)
+        public DeleteRequestCommandHandler(IUnitOfWork unitOfWork, IDistributedCache cache)
         {
-            _requestRepository = requestRepository;
+            _unitOfWork = unitOfWork;
             _cache = cache;
         }
 
         public async Task<Result> Handle(DeleteRequestCommand command, CancellationToken cancellationToken)
         {
-            var request = await _requestRepository.GetByIdAsync(command.RequestId, cancellationToken);
+            var requestRepo = _unitOfWork.Repository<Request>();
+            var request = await requestRepo.GetByIdAsync(command.RequestId, cancellationToken);
 
             if (request == null)
                 return Result.Failure(Request.Errors.NotFound);
@@ -28,8 +29,8 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
             if (request.Useridreq != command.UserId)
                 return Result.Failure(Request.Errors.Unauthorized);
 
-            await _requestRepository.Delete(command.RequestId);
-            await _requestRepository.SaveChangesAsync();
+            await requestRepo.Delete(command.RequestId);
+            await _unitOfWork.SaveChangesAsync();
 
             await _cache.RemoveAsync($"requests:user:{command.UserId}");
 

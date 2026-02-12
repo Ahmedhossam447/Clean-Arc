@@ -7,16 +7,16 @@ namespace CleanArc.Application.Handlers.QueriesHandler.Chat
 {
     public class GetUnreadMessagesQueryHandler : IRequestHandler<GetUnreadMessagesQuery, List<Message>>
     {
-        private readonly IRepository<Message> _messageRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetUnreadMessagesQueryHandler(IRepository<Message> messageRepository)
+        public GetUnreadMessagesQueryHandler(IUnitOfWork unitOfWork)
         {
-            _messageRepository = messageRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<Message>> Handle(GetUnreadMessagesQuery query, CancellationToken cancellationToken)
         {
-            var messages = await _messageRepository.GetAsync(m =>
+            var messages = await _unitOfWork.Repository<Message>().GetAsync(m =>
                 m.ReceiverId == query.UserId && !m.IsRead, cancellationToken);
 
             return messages

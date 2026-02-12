@@ -9,23 +9,24 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 {
     public class RejectRequestCommandHandler : IRequestHandler<RejectRequestCommand, Result>
     {
-        private readonly IRepository<Request> _requestRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IDistributedCache _cache;
         private readonly INotificationService _notificationService;
 
         public RejectRequestCommandHandler(
-            IRepository<Request> requestRepository,
+            IUnitOfWork unitOfWork,
             IDistributedCache cache,
             INotificationService notificationService)
         {
-            _requestRepository = requestRepository;
+            _unitOfWork = unitOfWork;
             _cache = cache;
             _notificationService = notificationService;
         }
 
         public async Task<Result> Handle(RejectRequestCommand command, CancellationToken cancellationToken)
         {
-            var request = await _requestRepository.GetByIdAsync(command.RequestId, cancellationToken);
+            var requestRepo = _unitOfWork.Repository<Request>();
+            var request = await requestRepo.GetByIdAsync(command.RequestId, cancellationToken);
 
             if (request == null)
                 return Result.Failure(Request.Errors.NotFound);
@@ -35,11 +36,10 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 
             var requesterId = request.Useridreq;
 
-            await _requestRepository.Delete(request.Reqid);
-            await _requestRepository.SaveChangesAsync();
+            await requestRepo.Delete(request.Reqid);
+            await _unitOfWork.SaveChangesAsync();
             await _notificationService.SendNotificationToUserAsync(requesterId, "RequestRejected", new { RequestId = request.Reqid, AnimalId = request.AnimalId });
 
-            // Cache invalidation after write - don't use cancellationToken
             await _cache.RemoveAsync($"requests:user:{requesterId}");
 
             return Result.Success();

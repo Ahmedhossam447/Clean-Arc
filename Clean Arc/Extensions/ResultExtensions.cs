@@ -56,6 +56,11 @@ public static class ResultExtensions
             return controller.Unauthorized(problemDetails);
         }
 
+        if (error.Code.EndsWith(".Unauthorized"))
+        {
+            return controller.StatusCode(403, problemDetails);
+        }
+
         if (error.Code.EndsWith(".AlreadyProcessed"))
         {
             return controller.Conflict(problemDetails);
@@ -86,6 +91,9 @@ public static class ResultExtensions
         if (error.Code == "User.InvalidCredentials" ||
             error.Code.EndsWith(".InvalidSignature"))
             return controller.Unauthorized(problemDetails);
+
+        if (error.Code.EndsWith(".Unauthorized"))
+            return controller.StatusCode(403, problemDetails);
 
         if (error.Code.EndsWith(".AlreadyProcessed"))
             return controller.Conflict(problemDetails);

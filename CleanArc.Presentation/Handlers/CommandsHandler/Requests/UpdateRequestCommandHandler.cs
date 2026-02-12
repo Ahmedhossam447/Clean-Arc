@@ -10,18 +10,19 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
 {
     public class UpdateRequestCommandHandler : IRequestHandler<UpdateRequestCommand, Result<RequestResponse>>
     {
-        private readonly IRepository<Request> _requestRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IDistributedCache _cache;
 
-        public UpdateRequestCommandHandler(IRepository<Request> requestRepository, IDistributedCache cache)
+        public UpdateRequestCommandHandler(IUnitOfWork unitOfWork, IDistributedCache cache)
         {
-            _requestRepository = requestRepository;
+            _unitOfWork = unitOfWork;
             _cache = cache;
         }
 
         public async Task<Result<RequestResponse>> Handle(UpdateRequestCommand command, CancellationToken cancellationToken)
         {
-            var request = await _requestRepository.GetByIdAsync(command.RequestId, cancellationToken);
+            var requestRepo = _unitOfWork.Repository<Request>();
+            var request = await requestRepo.GetByIdAsync(command.RequestId, cancellationToken);
 
             if (request == null)
                 return Request.Errors.NotFound;
@@ -40,10 +41,9 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Requests
             if (!string.IsNullOrEmpty(command.Status))
                 request.Status = command.Status;
 
-            _requestRepository.Update(request);
-            await _requestRepository.SaveChangesAsync();
+            requestRepo.Update(request);
+            await _unitOfWork.SaveChangesAsync();
 
-            // Cache invalidation after write - don't use cancellationToken
             await _cache.RemoveAsync($"requests:user:{oldRequesterId}");
             if (oldRequesterId != request.Useridreq)
                 await _cache.RemoveAsync($"requests:user:{request.Useridreq}");
