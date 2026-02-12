@@ -20,5 +20,8 @@ namespace CleanArc.Core.Entities
 
         // Shelter who sold it
         public string ShelterId { get; set; }
+
+        // Shipment tracking: Pending → Processing → Shipped → Delivered
+        public string Status { get; set; } = "Pending";
     }
 }

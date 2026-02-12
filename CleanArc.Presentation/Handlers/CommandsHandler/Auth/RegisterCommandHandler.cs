@@ -30,6 +30,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Auth
                 request.Username, 
                 request.Password, 
                 request.Email,
+                request.Role,
                 request.FullName,
                 request.PhotoUrl,
                 request.Location,

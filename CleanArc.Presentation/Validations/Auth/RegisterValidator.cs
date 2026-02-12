@@ -41,6 +41,11 @@ namespace CleanArc.Application.Validations.Auth
             RuleFor(x => x.PhoneNumber)
                 .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format.")
                 .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
+
+            RuleFor(x => x.Role)
+                .NotEmpty().WithMessage("Role is required.")
+                .Must(role => role == "User" || role == "Shelter")
+                .WithMessage("Role must be either 'User' or 'Shelter'.");
         }
     }
 }

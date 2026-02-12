@@ -27,6 +27,11 @@ namespace CleanArc.Infrastructure.Persistence.Data.Config
             builder.Property(oi => oi.ShelterId)
                 .IsRequired();
 
+            builder.Property(oi => oi.Status)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasDefaultValue("Pending");
+
             // FK to Product
             builder.HasOne(oi => oi.Product)
                 .WithMany()

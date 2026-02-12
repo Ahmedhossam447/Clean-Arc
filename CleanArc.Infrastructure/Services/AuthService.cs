@@ -75,6 +75,7 @@ namespace CleanArc.Infrastructure.Services
             string username, 
             string password, 
             string email,
+            string role = "User",
             string? fullName = null,
             string? photoUrl = null,
             string? location = null,
@@ -115,6 +116,7 @@ namespace CleanArc.Infrastructure.Services
             var result = await _userManager.CreateAsync(newUser, password);
             if (result.Succeeded)
             {
+                await _userManager.AddToRoleAsync(newUser, role);
                 return (true, Array.Empty<string>());
             }
 

@@ -8,6 +8,7 @@ namespace CleanArc.Core.Interfaces
             string username, 
             string password, 
             string email,
+            string role = "User",
             string? fullName = null,
             string? photoUrl = null,
             string? location = null,

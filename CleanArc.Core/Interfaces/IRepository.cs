@@ -10,6 +10,7 @@ namespace CleanArc.Core.Interfaces
         // Read operations - cancellable
         Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default);
         Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default);
+        Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes);
         Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
         
         // Write operations - NOT cancellable (must complete)

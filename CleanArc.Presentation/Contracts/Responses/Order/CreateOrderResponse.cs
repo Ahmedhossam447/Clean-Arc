@@ -4,10 +4,9 @@ namespace CleanArc.Application.Contracts.Responses.Order
     {
         public int OrderId { get; set; }
         public decimal Subtotal { get; set; }
-        public string Currency { get; set; }
-        public string Status { get; set; }
-        public string PaymentUrl { get; set; }
-        public List<OrderItemResponse> Items { get; set; }
+        public string Currency { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public List<OrderItemResponse> Items { get; set; } = new();
     }
 
     public class OrderItemResponse

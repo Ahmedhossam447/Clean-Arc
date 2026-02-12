@@ -2,6 +2,7 @@
 using CleanArc.Infrastructure.Identity;
 using CleanArc.Infrastructure.Persistence;
 using CleanArc.Infrastructure.Persistence.Data;
+using CleanArc.Infrastructure.Persistence.Seed;
 using CleanArc.Infrastructure.Services;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -107,6 +108,9 @@ namespace CleanArc.Infrastructure
             {
                 client.BaseAddress = new Uri("https://accept.paymob.com/api/");
             });
+
+            // Seed roles on startup
+            services.AddHostedService<RoleSeederWorker>();
         }
     }
 }

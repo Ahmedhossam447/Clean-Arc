@@ -24,7 +24,7 @@ public class ProductController : ControllerBase
 
     // POST
 
-    [Authorize]
+    [Authorize(Roles = "Shelter")]
     [HttpPost]
     public async Task<ActionResult<CreateProductResponse>> CreateProduct([FromForm] CreateProductRequest request)
     {
@@ -74,7 +74,7 @@ public class ProductController : ControllerBase
 
     // PUT
 
-    [Authorize]
+    [Authorize(Roles = "Shelter")]
     [HttpPut("{id}")]
     public async Task<ActionResult<UpdateProductResponse>> UpdateProduct(int id, [FromForm] UpdateProductRequest request)
     {
@@ -100,7 +100,7 @@ public class ProductController : ControllerBase
 
     // DELETE
 
-    [Authorize]
+    [Authorize(Roles = "Shelter")]
     [HttpDelete("{id}")]
     public async Task<ActionResult<DeleteProductResponse>> DeleteProduct([FromRoute] int id)
     {
