@@ -20,7 +20,7 @@ namespace Clean_Arc.Controllers
             _mediator = mediator;
         }
 
-        [Authorize]
+        [Authorize(Roles = "User")]
         [HttpPost("{animalId}")]
         public async Task<ActionResult<CreateRequestResponse>> CreateRequest([FromRoute] int animalId)
         {
@@ -38,7 +38,7 @@ namespace Clean_Arc.Controllers
             return result.ToActionResult(this);
         }
 
-        [Authorize]
+        [Authorize(Roles = "User")]
         [HttpGet("{id}")]
         public async Task<ActionResult<RequestResponse>> GetById([FromRoute] int id, CancellationToken cancellationToken)
         {
@@ -47,7 +47,7 @@ namespace Clean_Arc.Controllers
             return result.ToActionResult(this);
         }
 
-        [Authorize]
+        [Authorize(Roles = "User")]
         [HttpGet("my")]
         public async Task<ActionResult<List<RequestResponse>>> GetMyRequests(CancellationToken cancellationToken)
         {
@@ -60,7 +60,7 @@ namespace Clean_Arc.Controllers
             return Ok(result);
         }
 
-        [Authorize]
+        [Authorize(Roles = "User")]
         [HttpGet("received")]
         public async Task<ActionResult<List<RequestResponse>>> GetReceivedRequests(CancellationToken cancellationToken)
         {
@@ -84,7 +84,7 @@ namespace Clean_Arc.Controllers
             return result.ToActionResult(this);
         }
 
-        [Authorize]
+        [Authorize(Roles = "User")]
         [HttpPost("{id}/accept")]
         public async Task<ActionResult> AcceptRequest([FromRoute] int id)
         {
@@ -102,7 +102,7 @@ namespace Clean_Arc.Controllers
             return result.ToActionResult(this);
         }
 
-        [Authorize]
+        [Authorize(Roles = "User")]
         [HttpPost("{id}/reject")]
         public async Task<ActionResult> RejectRequest([FromRoute] int id)
         {
@@ -120,7 +120,7 @@ namespace Clean_Arc.Controllers
             return result.ToActionResult(this);
         }
 
-        [Authorize]
+        [Authorize(Roles = "User")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete([FromRoute] int id)
         {

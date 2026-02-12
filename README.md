@@ -1,6 +1,6 @@
-# CleanArc - Animal Adoption Platform
+# CleanArc - Animal Adoption & Shelter Marketplace
 
-A modern, scalable animal adoption platform built with **Clean Architecture**, following Domain-Driven Design principles and best practices.
+A modern, scalable animal adoption platform built with **Clean Architecture**, following Domain-Driven Design principles and best practices. Users can list animals for adoption and send adoption requests, while shelters sell pet products with integrated online payments and shipment tracking.
 
 ## 🏗️ Architecture
 
@@ -11,6 +11,7 @@ CleanArc.Core          → Domain entities, interfaces, primitives (no dependenc
 CleanArc.Presentation  → Application layer (commands, queries, handlers, validators)
 CleanArc.Infrastructure → External services (database, S3, email, identity)
 Clean Arc              → API layer (controllers, middleware, SignalR hubs)
+CleanArc.Testing       → Unit tests (xUnit, NSubstitute, FluentAssertions)
 ```
 
 ### Key Principles
@@ -19,15 +20,16 @@ Clean Arc              → API layer (controllers, middleware, SignalR hubs)
 - **Result Pattern**: Functional error handling with `Result<T>` type
 - **Domain-Driven Design**: Rich domain models with business logic
 - **Unit of Work Pattern**: Transaction management for atomic operations
-- **Repository Pattern**: Generic and specialized repositories for data access
+- **Repository Pattern**: Generic and specialized repositories for data access with eager loading support
 
 ## 🚀 Tech Stack
 
 - **.NET 8** - Web API Framework
 - **Entity Framework Core** - ORM with SQL Server
+- **ASP.NET Core Identity** - User management, roles, and authentication
 - **MediatR** - CQRS implementation
 - **FluentValidation** - Input validation
-- **JWT Authentication** - Identity & Access Management
+- **JWT Authentication** - Identity & Access Management (with role claims)
 - **SignalR** - Real-time chat functionality
 - **Hangfire** - Background job processing (Redis storage)
 - **MassTransit + RabbitMQ** - Message queue for domain events
@@ -42,12 +44,14 @@ Clean Arc              → API layer (controllers, middleware, SignalR hubs)
 - ✅ **Animal Management** - Create, read, update, delete animals with photos
 - ✅ **Medical Records** - One-to-one relationship with animals
 - ✅ **Vaccination Tracking** - One-to-many relationship with medical records
-- ✅ **Adoption Requests** - Request system for animal adoption with automatic rejection of other pending requests
+- ✅ **Adoption Requests** - User-to-user request system with automatic rejection of other pending requests
 - ✅ **Product Catalog** - Shelters can add/edit/delete products with photos
-- ✅ **Order System** - Buyers can order products with cart support
+- ✅ **Order System** - Flexible cart with add/remove items before checkout
 - ✅ **Payment Integration** - Paymob payment gateway with webhook processing
-- ✅ **User Authentication** - JWT-based auth with refresh tokens
-- ✅ **Real-time Chat** - SignalR-based messaging system
+- ✅ **Shipment Tracking** - Per-item status tracking (Pending → Processing → Shipped → Delivered)
+- ✅ **Shelter Sales Dashboard** - Shelters can view paid orders containing their products
+- ✅ **User Authentication** - JWT-based auth with refresh tokens and role assignment
+- ✅ **Real-time Chat** - SignalR-based messaging system (used for shelter-to-user adoption communication)
 - ✅ **Real-time Notifications** - SignalR notifications for single or multiple users
 - ✅ **Photo Management** - AWS S3 integration with automatic compression
 - ✅ **Background Jobs** - Hangfire for async photo deletion and adoption processing
@@ -55,12 +59,22 @@ Clean Arc              → API layer (controllers, middleware, SignalR hubs)
 - ✅ **Domain Events** - MassTransit for event-driven architecture
 - ✅ **Transaction Management** - Unit of Work pattern for atomic database operations
 
+### Role-Based Access Control
+Three roles are seeded on application startup via `RoleSeederWorker` (IHostedService):
+
+| Role | Capabilities |
+|------|-------------|
+| **User** | Create animals, send/accept/reject adoption requests, adopt animals, create orders, manage cart items, checkout, chat |
+| **Shelter** | Create animals, manage products (CRUD), view sales dashboard, update order item shipment status, chat |
+| **Admin** | Update adoption requests |
+
 ### Security Features
-- ✅ **Authorization Checks** - Users can only modify their own resources
-- ✅ **JWT Authentication** - Secure token-based authentication
+- ✅ **Role-Based Authorization** - Endpoints restricted by role (`User`, `Shelter`, `Admin`)
+- ✅ **Ownership Checks** - Users can only modify their own resources (handler-level validation)
+- ✅ **JWT with Role Claims** - Role embedded in token for authorization
 - ✅ **HMAC Webhook Validation** - Timing-safe Paymob webhook signature verification
 - ✅ **Input Validation** - FluentValidation on all commands/queries
-- ✅ **Global Exception Handling** - Centralized error handling
+- ✅ **Global Exception Handling** - Centralized error handling middleware
 - ✅ **Foreign Key Constraints** - Database-level data integrity
 - ✅ **Optimistic Concurrency** - RowVersion on Product entity
 
@@ -78,28 +92,34 @@ CleanArc/
 ├── Clean Arc/                    # API Layer
 │   ├── Controllers/              # REST API endpoints
 │   ├── Middleware/               # GlobalExceptionHandler
-│   └── Contracts/                # Request/Response DTOs
+│   ├── Extensions/               # ResultExtensions (error → HTTP status mapping)
+│   └── Contracts/                # Request DTOs
 │
 ├── CleanArc.Core/                # Domain Layer
-│   ├── Entities/                 # Domain entities (Animal, Product, Order, etc.)
+│   ├── Entities/                 # Domain entities (Animal, Product, Order, OrderItem, etc.)
 │   ├── Interfaces/               # Repository & service interfaces
 │   ├── Primitives/               # Result, Error types
 │   └── Events/                   # Domain events
 │
 ├── CleanArc.Presentation/        # Application Layer
-│   ├── Commands/                 # Write operations
+│   ├── Commands/                 # Write operations (Order, Product, Animal, Auth, etc.)
 │   ├── Queries/                  # Read operations
 │   ├── Handlers/                 # Command/Query handlers
+│   ├── Contracts/                # Response DTOs
 │   ├── Validations/              # FluentValidation rules
+│   ├── Common/Security/          # PaymobSecurity (HMAC validation)
 │   ├── Consumers/                # MassTransit event consumers
 │   └── Pipeline Behaviour/       # MediatR pipeline behaviors
 │
-└── CleanArc.Infrastructure/      # Infrastructure Layer
-    ├── Persistence/              # EF Core DbContext, repositories, UnitOfWork
-    ├── Services/                 # External service implementations (S3, Email, Paymob, SignalR)
-    ├── Hubs/                     # SignalR hubs (ChatHub, NameUserIdProvider)
-    ├── Identity/                 # ASP.NET Identity
-    └── Migrations/                # Database migrations
+├── CleanArc.Infrastructure/      # Infrastructure Layer
+│   ├── Persistence/              # EF Core DbContext, repositories, UnitOfWork, seed
+│   ├── Services/                 # External service implementations (S3, Email, Paymob, SignalR)
+│   ├── Hubs/                     # SignalR hubs (ChatHub, NameUserIdProvider)
+│   ├── Identity/                 # ASP.NET Identity (ApplicationUser)
+│   └── Migrations/               # Database migrations
+│
+└── CleanArc.Testing/             # Test Layer
+    └── Unit/                     # Unit tests per feature (Animal, Product, Order, Payment)
 ```
 
 ## 🔧 Setup Instructions
@@ -173,11 +193,13 @@ dotnet run --project "Clean Arc"
    - Swagger: `https://localhost:5001/swagger`
    - Hangfire Dashboard: `https://localhost:5001/jobs`
 
+> **Note**: Default roles (`User`, `Shelter`, `Admin`) are automatically seeded on startup.
+
 ## 📡 API Endpoints
 
 ### Authentication (`/api/auth`)
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login and get JWT token
+- `POST /api/auth/register` - Register new user (with role: `User` or `Shelter`)
+- `POST /api/auth/login` - Login and get JWT token (includes role claim)
 - `POST /api/auth/refresh` - Refresh access token
 - `POST /api/auth/logout` - Logout and revoke token
 - `POST /api/auth/confirm-email` - Confirm email address
@@ -193,20 +215,35 @@ dotnet run --project "Clean Arc"
 - `GET /api/animal/Owner/{ownerId}` - Get animals by owner **[Authorize]**
 - `PUT /api/animal/{id}` - Update animal (with photo) **[Authorize]**
 - `DELETE /api/animal/{id}` - Delete animal **[Authorize]**
-- `POST /api/animal/{animalid}/Adopt` - Adopt an animal **[Authorize]**
+- `POST /api/animal/{animalid}/Adopt` - Adopt an animal **[User]**
 
 ### Products (`/api/product`)
-- `POST /api/product` - Create product (with photo) **[Authorize]**
+- `POST /api/product` - Create product (with photo) **[Shelter]**
 - `GET /api/product/{id}` - Get product by ID
 - `GET /api/product` - Get all products (paginated)
-- `PUT /api/product/{id}` - Update product (with photo) **[Authorize]**
-- `DELETE /api/product/{id}` - Delete product **[Authorize]**
+- `PUT /api/product/{id}` - Update product (with photo) **[Shelter]**
+- `DELETE /api/product/{id}` - Delete product **[Shelter]**
 
 ### Orders (`/api/order`)
-- `POST /api/order` - Create order and get payment URL **[Authorize]**
+- `POST /api/order` - Create order from cart items **[User]**
+- `POST /api/order/{orderId}/items` - Add item to pending order **[User]**
+- `DELETE /api/order/{orderId}/items/{itemId}` - Remove item from pending order **[User]**
+- `POST /api/order/{orderId}/checkout` - Checkout and get payment URL **[User]**
+- `GET /api/order/my-sales` - Get sales for shelter (paginated, paid orders only) **[Shelter]**
+- `PATCH /api/order/{orderId}/items/{itemId}/status` - Update item shipment status **[Shelter]**
 
 ### Payments (`/api/payment`)
-- `POST /api/payment/webhook` - Paymob webhook (HMAC validated)
+- `POST /api/payment/webhook` - Paymob webhook (HMAC validated, raw body parsing)
+
+### Adoption Requests (`/api/request`) — User-only feature
+- `POST /api/request/{animalId}` - Create adoption request **[User]**
+- `GET /api/request/{id}` - Get request by ID **[User]**
+- `GET /api/request/my` - Get my sent requests **[User]**
+- `GET /api/request/received` - Get received requests for my animals **[User]**
+- `POST /api/request/{id}/accept` - Accept request **[User]**
+- `POST /api/request/{id}/reject` - Reject request **[User]**
+- `DELETE /api/request/{id}` - Delete/cancel request **[User]**
+- `PUT /api/request/{id}` - Admin update request **[Admin]**
 
 ### Medical Records (`/api/medicalrecord`)
 - `GET /api/medicalrecord/animal/{animalId}` - Get medical record by animal ID
@@ -216,13 +253,6 @@ dotnet run --project "Clean Arc"
 - `POST /api/vaccinations` - Add vaccination **[Authorize]**
 - `PUT /api/vaccinations/{id}` - Update vaccination **[Authorize]**
 - `DELETE /api/vaccinations/{id}` - Delete vaccination **[Authorize]**
-
-### Requests (`/api/request`)
-- `POST /api/request/{animalId}` - Create adoption request **[Authorize]**
-- `GET /api/request/{id}` - Get request by ID **[Authorize]**
-- `GET /api/request/my` - Get my requests **[Authorize]**
-- `PUT /api/request/{id}/accept` - Accept request **[Authorize]**
-- `PUT /api/request/{id}/reject` - Reject request **[Authorize]**
 
 ### Users (`/api/user`)
 - `GET /api/user/profile` - Get current user profile **[Authorize]**
@@ -236,14 +266,18 @@ dotnet run --project "Clean Arc"
 
 ## 🔐 Security
 
-### Authorization
-- Users can only **update/delete their own animals and products**
-- JWT tokens extracted from `ClaimTypes.NameIdentifier`
-- Authorization checks performed at handler level
+### Role-Based Authorization
+- **User**: Adoption requests, ordering products, adopting animals
+- **Shelter**: Product management, sales dashboard, shipment status updates
+- **Admin**: Administrative request updates
+- **Any authenticated**: Animal CRUD (ownership validated in handlers), medical records, vaccinations, chat
+- Roles are seeded automatically at startup via `RoleSeederWorker` (`IHostedService`)
+- Role is assigned during registration and embedded in the JWT token
 
 ### Webhook Security
 - **HMAC-SHA512** validation for Paymob webhooks
 - **Timing-safe comparison** using `CryptographicOperations.FixedTimeEquals` to prevent timing attacks
+- **Raw body parsing** — request body read manually via `StreamReader` to bypass ASP.NET model binding
 - Invalid signatures return `401 Unauthorized`
 
 ### Error Handling
@@ -282,19 +316,43 @@ dotnet run --project "Clean Arc"
 User → POST /api/order [{productId:1, qty:2}, ...]
   → Validate stock (soft check)
   → Merge duplicate cart items
-  → Save Order + PaymentTransaction to DB (Pending)
+  → Save Order + OrderItems to DB (Status: "Pending")
+  → Return CreateOrderResponse with OrderId
+
+User → POST /api/order/{id}/items   (add items)
+User → DELETE /api/order/{id}/items/{itemId}  (remove items)
+
+User → POST /api/order/{id}/checkout
+  → Recalculate subtotal from current items
+  → Re-validate stock
+  → Create PaymentTransaction (Pending)
   → Call Paymob API → get payment URL
-  → Return CreateOrderResponse with paymentUrl
+  → Return CheckoutOrderResponse with PaymentUrl
 
 User → Pays on Paymob iframe
 
 Paymob → POST /api/payment/webhook?hmac=xxx
-  → Validate HMAC signature
+  → Validate HMAC signature (timing-safe)
   → Payment success?
     → Decrement stock (atomic SQL, sorted by ProductId, in transaction)
     → Mark order "PaymentReceived" ✅
   → Payment failed?
     → Mark order "PaymentFailed" ❌ (stock untouched)
+
+Shelter → GET /api/order/my-sales  (view paid orders)
+Shelter → PATCH /api/order/{id}/items/{itemId}/status  (update shipment)
+  → Status flow: Pending → Processing → Shipped → Delivered
+```
+
+### Adoption Flow
+```
+For User-listed animals:
+  User A creates animal → User B sends adoption request
+  → User A accepts/rejects → Accepted: animal marked adopted, other requests auto-rejected
+
+For Shelter-listed animals:
+  Shelter creates animal → User contacts shelter via real-time chat
+  → Adoption handled directly (no request system)
 ```
 
 ### Stock Concurrency Strategy
@@ -330,18 +388,19 @@ Paymob → POST /api/payment/webhook?hmac=xxx
 - **Transaction Management**: Atomic operations for complex workflows
 - **Repository Access**: Centralized access to specialized repositories (`IAnimalRepository`, `IRequestRepository`)
 - **Generic Repositories**: Support for any entity via `Repository<T>()`
+- **Eager Loading**: `GetAsync` supports `Include` expressions for related data
 - **Raw SQL Support**: `ExecuteSqlRawAsync` for atomic operations that bypass EF Core
 - **Transaction Support**: `BeginTransactionAsync`, `CommitTransactionAsync`, `RollbackTransactionAsync`
 
 ### Repository Pattern
-- **Generic Repository**: Base `Repository<TEntity>` with common CRUD operations
+- **Generic Repository**: Base `Repository<TEntity>` with common CRUD operations and `Include` support
 - **Specialized Repositories**: 
   - `AnimalRepository` - `GetAvailableAnimalsForAdoption()`
   - `RequestRepository` - `GetRequestWithAnimalAsync()`, `GetPendingRequestsForAnimalAsync()`, `RemoveRange()`
 - **Unit of Work Integration**: All repositories share the same `DbContext` for transaction consistency
 
 ### SignalR & Notifications
-- **Real-time Chat**: `ChatHub` for user-to-user messaging
+- **Real-time Chat**: `ChatHub` for user-to-user and user-to-shelter messaging
 - **Notification Service**: 
   - `SendNotificationToUserAsync()` - Single user notifications
   - `SendNotificationAsync()` - Multiple users (broadcast)
@@ -351,8 +410,17 @@ Paymob → POST /api/payment/webhook?hmac=xxx
 ## 🧪 Testing
 
 Unit tests located in `CleanArc.Testing` project:
-- Handler tests using NSubstitute
-- FluentAssertions for assertions
+
+| Test Suite | Handlers Tested |
+|---|---|
+| **AnimalTests** | `AdoptAnimalCommandHandler`, `DeleteAnimalCommandHandler` |
+| **ProductTests** | `CreateProductCommandHandler`, `DeleteProductCommandHandler` |
+| **OrderTests** | `CreateOrderCommandHandler` |
+| **PaymentTests** | `ProcessPaymobWebhookCommandHandler` |
+
+- **NSubstitute** for mocking dependencies
+- **FluentAssertions** for readable assertions
+- **MockExtension** helpers for `IUnitOfWork` and `Repository<T>` setup
 
 ## 📝 Development Guidelines
 
@@ -361,8 +429,9 @@ Unit tests located in `CleanArc.Testing` project:
 2. Create command/query in `CleanArc.Presentation/Commands` or `Queries`
 3. Implement handler in `CleanArc.Presentation/Handlers`
 4. Add FluentValidation rules
-5. Create controller endpoint
+5. Create controller endpoint with appropriate `[Authorize(Roles = "...")]`
 6. Add EF Core configuration if needed
+7. Write unit tests in `CleanArc.Testing`
 
 ### Error Handling
 - Use `Result<T>` pattern for operations that can fail

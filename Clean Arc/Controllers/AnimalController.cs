@@ -50,7 +50,7 @@ public class AnimalController : ControllerBase
         return result.ToActionResult(this);
     }
 
-    [Authorize]
+    [Authorize(Roles = "User")]
     [HttpPost("{animalid}/Adopt")]
     public async Task<ActionResult<AdoptAnimalResponse>> AdoptAnimal([FromRoute] int animalid)
     {

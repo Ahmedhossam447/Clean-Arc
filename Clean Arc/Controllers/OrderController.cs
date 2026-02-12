@@ -23,6 +23,7 @@ public class OrderController : ControllerBase
         _mediator = mediator;
     }
 
+    [Authorize(Roles = "User")]
     [HttpPost]
     public async Task<ActionResult<CreateOrderResponse>> CreateOrder([FromBody] List<CartItemRequest> items)
     {
@@ -65,6 +66,7 @@ public class OrderController : ControllerBase
         return Ok(result);
     }
 
+    [Authorize(Roles = "User")]
     [HttpPost("{orderId}/items")]
     public async Task<ActionResult<OrderItemResponse>> AddOrderItem(
         [FromRoute] int orderId,
@@ -86,6 +88,7 @@ public class OrderController : ControllerBase
         return result.ToActionResult(this);
     }
 
+    [Authorize(Roles = "User")]
     [HttpDelete("{orderId}/items/{itemId}")]
     public async Task<ActionResult> RemoveOrderItem(
         [FromRoute] int orderId,
@@ -106,6 +109,7 @@ public class OrderController : ControllerBase
         return result.ToActionResult(this);
     }
 
+    [Authorize(Roles = "User")]
     [HttpPost("{orderId}/checkout")]
     public async Task<ActionResult<CheckoutOrderResponse>> Checkout([FromRoute] int orderId)
     {
