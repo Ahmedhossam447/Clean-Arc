@@ -1,4 +1,4 @@
-using CleanArc.Core.Entites;
+using CleanArc.Core.Entities;
 
 namespace CleanArc.Core.Interfaces
 {

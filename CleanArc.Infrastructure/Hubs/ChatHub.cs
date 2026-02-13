@@ -1,4 +1,4 @@
-using CleanArc.Core.Entites;
+using CleanArc.Core.Entities;
 using CleanArc.Core.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 
@@ -6,11 +6,11 @@ namespace CleanArc.Infrastructure.Hubs
 {
     public class ChatHub : Hub
     {
-        private readonly IRepository<Message> _messageRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ChatHub(IRepository<Message> messageRepository)
+        public ChatHub(IUnitOfWork unitOfWork)
         {
-            _messageRepository = messageRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public override async Task OnConnectedAsync()
@@ -49,8 +49,8 @@ namespace CleanArc.Infrastructure.Hubs
                 IsRead = false
             };
 
-            await _messageRepository.AddAsync(messageEntity);
-            await _messageRepository.SaveChangesAsync();
+            await _unitOfWork.Repository<Message>().AddAsync(messageEntity);
+            await _unitOfWork.SaveChangesAsync();
 
             // SignalR automatically finds all active connections for these users!
             // No database query needed - it uses the in-memory mapping

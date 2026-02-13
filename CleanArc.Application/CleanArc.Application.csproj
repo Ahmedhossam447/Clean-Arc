@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="huzcodes.Extensions" Version="1.3.0" />
+
+    <PackageReference Include="MediatR" Version="14.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands\Request\" />
+    <Folder Include="Contracts\Requests\Animal\" />
+    <Folder Include="Handlers\CommandsHandler\Order\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CleanArc.Core\CleanArc.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace CleanArc.Core.Interfaces
 {
@@ -19,7 +16,5 @@ namespace CleanArc.Core.Interfaces
         void RemoveRange(IEnumerable<TEntity> entities);
         void Update(TEntity entity);
         Task Delete(int id);
-        int SaveChanges();
-        Task SaveChangesAsync();
     }
 }

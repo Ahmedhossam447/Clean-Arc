@@ -1,6 +1,6 @@
 using CleanArc.Application.Commands.Animal;
 using CleanArc.Application.Handlers.CommandsHandler.Animals;
-using CleanArc.Core.Entites;
+using CleanArc.Core.Entities;
 using CleanArc.Core.Interfaces;
 using CleanArc.Testing.Unit.Extensions;
 using FluentAssertions;
@@ -35,9 +35,9 @@ namespace CleanArc.Testing.Unit.AnimalTests
         {
             var animal = new Animal
             {
-                AnimalId = 1,
+                Id = 1,
                 Name = "Simba",
-                Userid = "owner-123",
+                OwnerId = "owner-123",
                 Photo = "https://s3.amazonaws.com/bucket/simba.jpg"
             };
             var command = new DeleteAnimalCommand { AnimalId = 1, UserId = "owner-123" };
@@ -77,9 +77,9 @@ namespace CleanArc.Testing.Unit.AnimalTests
         {
             var animal = new Animal
             {
-                AnimalId = 1,
+                Id = 1,
                 Name = "Simba",
-                Userid = "owner-123",
+                OwnerId = "owner-123",
                 Photo = "https://s3.amazonaws.com/bucket/simba.jpg"
             };
             var command = new DeleteAnimalCommand { AnimalId = 1, UserId = "other-user-456" };
@@ -98,11 +98,11 @@ namespace CleanArc.Testing.Unit.AnimalTests
         [Fact]
         public async Task DeleteAnimalHandler_Should_DeleteRelatedRequests()
         {
-            var animal = new Animal { AnimalId = 1, Name = "Simba", Userid = "owner-123", Photo = "pic.jpg" };
+            var animal = new Animal { Id = 1, Name = "Simba", OwnerId = "owner-123", Photo = "pic.jpg" };
             var requests = new List<Request>
             {
-                new Request { Reqid = 10, AnimalId = 1, Useridreq = "adopter-1" },
-                new Request { Reqid = 11, AnimalId = 1, Useridreq = "adopter-2" }
+                new Request { Id = 10, AnimalId = 1, RequesterId = "adopter-1" },
+                new Request { Id = 11, AnimalId = 1, RequesterId = "adopter-2" }
             };
             var command = new DeleteAnimalCommand { AnimalId = 1, UserId = "owner-123" };
 
@@ -122,7 +122,7 @@ namespace CleanArc.Testing.Unit.AnimalTests
         [Fact]
         public async Task DeleteAnimalHandler_Should_NotEnqueueJob_When_NoPhoto()
         {
-            var animal = new Animal { AnimalId = 1, Name = "Simba", Userid = "owner-123", Photo = null };
+            var animal = new Animal { Id = 1, Name = "Simba", OwnerId = "owner-123", Photo = null };
             var command = new DeleteAnimalCommand { AnimalId = 1, UserId = "owner-123" };
 
             _UnitOfWork.Repository<Animal>().MockGetAnimalByIdAsync(animal);
@@ -137,12 +137,12 @@ namespace CleanArc.Testing.Unit.AnimalTests
         [Fact]
         public async Task DeleteAnimalHandler_Should_InvalidateCache_ForAnimalAndAffectedUsers()
         {
-            var animal = new Animal { AnimalId = 5, Name = "Rex", Userid = "owner-1", Photo = "img.jpg" };
+            var animal = new Animal { Id = 5, Name = "Rex", OwnerId = "owner-1", Photo = "img.jpg" };
             var requests = new List<Request>
             {
-                new Request { Reqid = 1, AnimalId = 5, Useridreq = "user-a" },
-                new Request { Reqid = 2, AnimalId = 5, Useridreq = "user-b" },
-                new Request { Reqid = 3, AnimalId = 5, Useridreq = "user-a" } // duplicate user
+                new Request { Id = 1, AnimalId = 5, RequesterId = "user-a" },
+                new Request { Id = 2, AnimalId = 5, RequesterId = "user-b" },
+                new Request { Id = 3, AnimalId = 5, RequesterId = "user-a" } // duplicate user
             };
             var command = new DeleteAnimalCommand { AnimalId = 5, UserId = "owner-1" };
 

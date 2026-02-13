@@ -1,11 +1,11 @@
 using CleanArc.Core.Primitives;
 using System.ComponentModel.DataAnnotations;
 
-namespace CleanArc.Core.Entites;
+namespace CleanArc.Core.Entities;
 
 public partial class Animal
 {
-    public int AnimalId { get; set; }
+    public int Id { get; set; }
     public string? Name { get; set; }
     public byte? Age { get; set; }
     public string? Type { get; set; }
@@ -14,7 +14,7 @@ public partial class Animal
     public string? Photo { get; set; }
     public bool IsAdopted { get; set; } = false;
     public string? About { get; set; }
-    public string? Userid { get; set; }
+    public string? OwnerId { get; set; }
     public byte[] RowVersion { get; set; }
     public virtual MedicalRecord? MedicalRecord { get; set; }
     public virtual ICollection<Request> Requests { get; set; } = new List<Request>();
@@ -47,7 +47,7 @@ public partial class Animal
         if (IsAdopted)
             return Errors.AlreadyAdopted;
 
-        if (Userid == adopterId)
+        if (OwnerId == adopterId)
             return Errors.CannotAdoptOwnAnimal;
 
         IsAdopted = true;

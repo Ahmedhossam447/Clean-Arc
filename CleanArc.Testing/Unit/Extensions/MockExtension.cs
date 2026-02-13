@@ -1,4 +1,3 @@
-﻿using CleanArc.Core.Entites;
 using CleanArc.Core.Entities;
 using CleanArc.Core.Interfaces;
 using CleanArc.Core.Models.Identity;
@@ -9,10 +8,10 @@ namespace CleanArc.Testing.Unit.Extensions
 {
     public static class MockExtension
     {
-        // ─── Animal ───
+        // --- Animal ---
         public static void MockGetAnimalByIdAsync(this IRepository<Animal> repository, Animal animal)
         {
-            repository.GetByIdAsync(animal.AnimalId).Returns(Task.FromResult<Animal?>(animal));
+            repository.GetByIdAsync(animal.Id).Returns(Task.FromResult<Animal?>(animal));
         }
 
         public static void MockGetAnimalByIdReturnsNull(this IRepository<Animal> repository, int id)
@@ -20,7 +19,7 @@ namespace CleanArc.Testing.Unit.Extensions
             repository.GetByIdAsync(id).Returns(Task.FromResult<Animal?>(null));
         }
 
-        // ─── Product ───
+        // --- Product ---
         public static void MockGetProductByIdAsync(this IRepository<Product> repository, Product product)
         {
             repository.GetByIdAsync(product.Id, Arg.Any<CancellationToken>()).Returns(Task.FromResult<Product?>(product));
@@ -31,7 +30,7 @@ namespace CleanArc.Testing.Unit.Extensions
             repository.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(Task.FromResult<Product?>(null));
         }
 
-        // ─── PaymentTransaction ───
+        // --- PaymentTransaction ---
         public static void MockGetPaymentByPaymobOrderId(this IRepository<PaymentTransaction> repository, PaymentTransaction payment)
         {
             repository.GetAsync(Arg.Any<Expression<Func<PaymentTransaction, bool>>>(), Arg.Any<CancellationToken>())
@@ -44,7 +43,7 @@ namespace CleanArc.Testing.Unit.Extensions
                 .Returns(Task.FromResult<IEnumerable<PaymentTransaction>>(new List<PaymentTransaction>()));
         }
 
-        // ─── Order ───
+        // --- Order ---
         public static void MockGetOrderByPaymentId(this IRepository<Order> repository, Order order)
         {
             repository.GetAsync(Arg.Any<Expression<Func<Order, bool>>>(), Arg.Any<CancellationToken>())
@@ -57,21 +56,21 @@ namespace CleanArc.Testing.Unit.Extensions
                 .Returns(Task.FromResult<IEnumerable<Order>>(new List<Order>()));
         }
 
-        // ─── OrderItem ───
+        // --- OrderItem ---
         public static void MockGetOrderItems(this IRepository<OrderItem> repository, List<OrderItem> items)
         {
             repository.GetAsync(Arg.Any<Expression<Func<OrderItem, bool>>>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult<IEnumerable<OrderItem>>(items));
         }
 
-        // ─── Request ───
+        // --- Request ---
         public static void MockGetRequestsByAnimalId(this IRepository<Request> repository, List<Request> requests)
         {
             repository.GetAsync(Arg.Any<Expression<Func<Request, bool>>>(), Arg.Any<CancellationToken>())
                 .Returns(Task.FromResult<IEnumerable<Request>>(requests));
         }
 
-        // ─── User ───
+        // --- User ---
         public static void MockGetUserByIdAsync(this IUserService userService, AuthUser user)
         {
             userService.GetUserByIdAsync(Arg.Is(user.Id)).Returns(Task.FromResult(user));

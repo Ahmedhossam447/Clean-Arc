@@ -79,7 +79,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CleanArc.Core\CleanArc.Core.csproj" />
-    <ProjectReference Include="..\CleanArc.Presentation\CleanArc.Application.csproj" />
   </ItemGroup>
 
 </Project>

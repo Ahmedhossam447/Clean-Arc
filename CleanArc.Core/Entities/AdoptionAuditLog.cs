@@ -1,4 +1,4 @@
-namespace CleanArc.Core.Entites;
+namespace CleanArc.Core.Entities;
 
 /// <summary>
 /// Audit log entry for animal adoptions - provides compliance and historical tracking

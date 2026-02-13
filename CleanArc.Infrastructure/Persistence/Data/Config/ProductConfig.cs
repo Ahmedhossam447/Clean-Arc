@@ -2,9 +2,6 @@ using CleanArc.Core.Entities;
 using CleanArc.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CleanArc.Infrastructure.Persistence.Data.Config
 {

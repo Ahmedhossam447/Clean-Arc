@@ -1,62 +1,42 @@
-using CleanArc.Core.Entites;
+using CleanArc.Core.Entities;
 using CleanArc.Core.Interfaces;
 using CleanArc.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CleanArc.Infrastructure.Persistence
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork : IUnitOfWork, IAsyncDisposable
     {
         private readonly AppDbContext _context;
-        private IDbContextTransaction _transaction;
-        private IRepository<Request> _requestRepository;
-        private IRepository<Animal> _animalRepository;
-        private Hashtable _repositories;
+        private IDbContextTransaction? _transaction;
+        private IRepository<Animal>? _animalRepository;
+        private Dictionary<string, object>? _repositories;
+
         public UnitOfWork(AppDbContext context)
         {
             _context = context;
         }
 
-
         public IRepository<Animal> AnimalRepository
-        { 
+        {
             get
             {
-                if (_animalRepository == null)
-                {
-                    _animalRepository = new Repository<Animal>(_context);
-                }
+                _animalRepository ??= new Repository<Animal>(_context);
                 return _animalRepository;
             }
         }
 
-        public IRepository<Request> RequestRepository
-        { 
-            get
-            {
-                if (_requestRepository == null)
-                {
-                    _requestRepository = new Repository<Request>(_context);
-                }
-                return _requestRepository;
-            }
-        }
+
         public IRepository<T> Repository<T>() where T : class
         {
-          if(_repositories == null)
-          {
-            _repositories = new Hashtable();
-          }
+            _repositories ??= new Dictionary<string, object>();
+
             var type = typeof(T).Name;
-            if(!_repositories.ContainsKey(type))
+            if (!_repositories.ContainsKey(type))
             {
-                var repositoryType = typeof(Repository<>);
-                var repositoryInstance = Activator.CreateInstance(repositoryType.MakeGenericType(typeof(T)), _context);
+                var repositoryInstance = new Repository<T>(_context);
                 _repositories.Add(type, repositoryInstance);
             }
             return (IRepository<T>)_repositories[type];
@@ -65,9 +45,8 @@ namespace CleanArc.Infrastructure.Persistence
         public async Task BeginTransactionAsync(CancellationToken token = default)
         {
             if (_transaction != null)
-            {
                 return;
-            }
+
             _transaction = await _context.Database.BeginTransactionAsync(token);
         }
 
@@ -81,7 +60,7 @@ namespace CleanArc.Infrastructure.Persistence
                     await _transaction.CommitAsync(token);
                 }
             }
-            catch 
+            catch
             {
                 await RollbackTransactionAsync(token);
                 throw;
@@ -94,11 +73,6 @@ namespace CleanArc.Infrastructure.Persistence
                     _transaction = null;
                 }
             }
-        }
-
-        public  void Dispose()
-        {
-            _context.Dispose();
         }
 
         public async Task RollbackTransactionAsync(CancellationToken token = default)
@@ -119,6 +93,30 @@ namespace CleanArc.Infrastructure.Persistence
         public async Task<int> ExecuteSqlRawAsync(string sql, params object[] parameters)
         {
             return await _context.Database.ExecuteSqlRawAsync(sql, parameters);
+        }
+
+        // Sync dispose — safety net for any leftover transaction
+        public void Dispose()
+        {
+            if (_transaction != null)
+            {
+                _transaction.Rollback();
+                _transaction.Dispose();
+                _transaction = null;
+            }
+            _context.Dispose();
+        }
+
+        // Async dispose — preferred path, registered automatically by DI
+        public async ValueTask DisposeAsync()
+        {
+            if (_transaction != null)
+            {
+                await _transaction.RollbackAsync();
+                await _transaction.DisposeAsync();
+                _transaction = null;
+            }
+            await _context.DisposeAsync();
         }
     }
 }

@@ -2,15 +2,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArc", "Clean Arc\CleanArc.csproj", "{F5BEBB04-6CA1-74E3-0609-00469E984E9B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArc", "CleanArc.API\CleanArc.API.csproj", "{F5BEBB04-6CA1-74E3-0609-00469E984E9B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArc.Core", "CleanArc.Core\CleanArc.Core.csproj", "{3E2E0A94-A12D-DAA9-2E76-878E6F946636}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArc.Infrastructure", "CleanArc.Infrastructure\CleanArc.Infrastructure.csproj", "{6F314A2F-C3B3-26F7-3CDB-1156F55997CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArc.Application", "CleanArc.Presentation\CleanArc.Application.csproj", "{A28EC9D1-9C48-FFF7-32D8-F99CA092980F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArc.Services", "CleanArc.Services\CleanArc.Services.csproj", "{C05455E1-AE77-1657-EE7D-4608E6F651BE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArc.Application", "CleanArc.Application\CleanArc.Application.csproj", "{A28EC9D1-9C48-FFF7-32D8-F99CA092980F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,10 +32,6 @@ Global
 		{A28EC9D1-9C48-FFF7-32D8-F99CA092980F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A28EC9D1-9C48-FFF7-32D8-F99CA092980F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A28EC9D1-9C48-FFF7-32D8-F99CA092980F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C05455E1-AE77-1657-EE7D-4608E6F651BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C05455E1-AE77-1657-EE7D-4608E6F651BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C05455E1-AE77-1657-EE7D-4608E6F651BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C05455E1-AE77-1657-EE7D-4608E6F651BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

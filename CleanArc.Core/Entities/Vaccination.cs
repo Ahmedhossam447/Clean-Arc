@@ -1,6 +1,6 @@
 using CleanArc.Core.Primitives;
 
-namespace CleanArc.Core.Entites;
+namespace CleanArc.Core.Entities;
 
 public class Vaccination
 {

@@ -1,4 +1,4 @@
-﻿using CleanArc.Core.Entites;
+using CleanArc.Core.Entities;
 using CleanArc.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -9,7 +9,12 @@ namespace CleanArc.Infrastructure.Persistence.Data.Config
     {
         public void Configure(EntityTypeBuilder<Animal> builder)
         {
-            builder.HasKey(a => a.AnimalId);
+            builder.HasKey(a => a.Id);
+
+            // Map to new column names (migration will rename)
+            builder.Property(a => a.Id).HasColumnName("Id");
+            builder.Property(a => a.OwnerId).HasColumnName("OwnerId");
+
             builder.Property(a => a.Name).HasMaxLength(100).IsRequired();
             builder.Property(a => a.Type).HasMaxLength(50).IsRequired();
             builder.Property(a => a.Breed).HasMaxLength(50).IsRequired();
@@ -21,7 +26,7 @@ namespace CleanArc.Infrastructure.Persistence.Data.Config
             // Foreign key to ApplicationUser (owner) - no navigation property in Core
             builder.HasOne<ApplicationUser>()
                    .WithMany()
-                   .HasForeignKey(a => a.Userid)
+                   .HasForeignKey(a => a.OwnerId)
                    .HasPrincipalKey(u => u.Id)
                    .OnDelete(DeleteBehavior.Restrict);
             

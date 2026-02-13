@@ -1,4 +1,4 @@
-﻿using CleanArc.Core.Interfaces;
+using CleanArc.Core.Interfaces;
 using CleanArc.Infrastructure.Identity;
 using CleanArc.Infrastructure.Persistence;
 using CleanArc.Infrastructure.Persistence.Data;
@@ -12,7 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using CleanArc.Application.Consumers;
+using CleanArc.Infrastructure.Consumers;
 
 namespace CleanArc.Infrastructure
 {
@@ -37,10 +37,9 @@ namespace CleanArc.Infrastructure
                 options.InstanceName = "CleanArc";
             });
 
-            // Register repositories
-            services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+            // Register repositories - Scoped to match DbContext/UnitOfWork lifetime
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IAnimalRepository, AnimalRepository>();
-            services.AddScoped<IRequestRepository, RequestRepository>();
             services.AddAuthentication(option=>
             {
                 option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -104,6 +103,7 @@ namespace CleanArc.Infrastructure
             services.AddScoped<IImageService, S3ImageService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IEventPublisher, MassTransitEventPublisher>();
             services.AddHttpClient<IPaymentService, PaymobService>(client =>
             {
                 client.BaseAddress = new Uri("https://accept.paymob.com/api/");

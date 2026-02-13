@@ -1,9 +1,6 @@
-﻿using CleanArc.Core.Interfaces;
+using CleanArc.Core.Interfaces;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 
 namespace CleanArc.Infrastructure.Services

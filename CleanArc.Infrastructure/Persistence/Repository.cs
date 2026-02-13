@@ -1,10 +1,7 @@
-﻿using CleanArc.Core.Interfaces;
+using CleanArc.Core.Interfaces;
 using CleanArc.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace CleanArc.Infrastructure.Persistence
 {
@@ -75,14 +72,5 @@ namespace CleanArc.Infrastructure.Persistence
             }
         }
 
-        public int SaveChanges()
-        {
-          return _context.SaveChanges();
-        }
-
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
     }
 }

@@ -1,4 +1,4 @@
-using CleanArc.Core.Entites;
+using CleanArc.Core.Entities;
 using CleanArc.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

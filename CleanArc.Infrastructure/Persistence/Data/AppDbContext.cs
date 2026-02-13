@@ -1,4 +1,3 @@
-﻿using CleanArc.Core.Entites;
 using CleanArc.Core.Entities;
 using CleanArc.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;

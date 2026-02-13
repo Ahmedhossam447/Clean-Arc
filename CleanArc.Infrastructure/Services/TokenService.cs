@@ -14,16 +14,16 @@ namespace CleanArc.Infrastructure.Services
     public class TokenService : ITokenService
     {
         private readonly IConfiguration _configuration;
-        private readonly IRepository<RefreshToken> _refreshTokenRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IUserService _userService;
 
         public TokenService(
             IConfiguration configuration,
-            IRepository<RefreshToken> refreshTokenRepository,
+            IUnitOfWork unitOfWork,
             IUserService userService)
         {
             _configuration = configuration;
-            _refreshTokenRepository = refreshTokenRepository;
+            _unitOfWork = unitOfWork;
             _userService = userService;
         }
 
@@ -73,8 +73,8 @@ namespace CleanArc.Infrastructure.Services
                 IsRevoked = false
             };
 
-            await _refreshTokenRepository.AddAsync(refreshToken);
-            await _refreshTokenRepository.SaveChangesAsync();
+            await _unitOfWork.Repository<RefreshToken>().AddAsync(refreshToken);
+            await _unitOfWork.SaveChangesAsync();
 
             return refreshToken;
         }
@@ -82,7 +82,7 @@ namespace CleanArc.Infrastructure.Services
         // Read operation - cancellable
         public async Task<Result<(string AccessToken, RefreshToken NewRefreshToken)>> RefreshTokensAsync(string refreshToken, CancellationToken cancellationToken = default)
         {
-            var tokens = await _refreshTokenRepository.GetAsync(t => t.Token == refreshToken, cancellationToken);
+            var tokens = await _unitOfWork.Repository<RefreshToken>().GetAsync(t => t.Token == refreshToken, cancellationToken);
             var existingToken = tokens.FirstOrDefault();
 
             if (existingToken == null)
@@ -104,8 +104,8 @@ namespace CleanArc.Infrastructure.Services
             var newRefreshToken = await GenerateRefreshTokenAsync(existingToken.UserId);
             
             existingToken.ReplacedByToken = newRefreshToken.Token;
-            _refreshTokenRepository.Update(existingToken);
-            await _refreshTokenRepository.SaveChangesAsync();
+            _unitOfWork.Repository<RefreshToken>().Update(existingToken);
+            await _unitOfWork.SaveChangesAsync();
 
             var newAccessToken = GenerateAccessToken(user);
 
@@ -114,7 +114,7 @@ namespace CleanArc.Infrastructure.Services
 
         public async Task<Result> RevokeRefreshTokenAsync(string refreshToken, string reason = "Logged out")
         {
-            var tokens = await _refreshTokenRepository.GetAsync(t => t.Token == refreshToken);
+            var tokens = await _unitOfWork.Repository<RefreshToken>().GetAsync(t => t.Token == refreshToken);
             var existingToken = tokens.FirstOrDefault();
 
             if (existingToken == null)
@@ -125,24 +125,24 @@ namespace CleanArc.Infrastructure.Services
 
             existingToken.IsRevoked = true;
             existingToken.RevokedReason = reason;
-            _refreshTokenRepository.Update(existingToken);
-            await _refreshTokenRepository.SaveChangesAsync();
+            _unitOfWork.Repository<RefreshToken>().Update(existingToken);
+            await _unitOfWork.SaveChangesAsync();
 
             return Result.Success();
         }
 
         public async Task RevokeAllUserTokensAsync(string userId, string reason = "Security revocation")
         {
-            var tokens = await _refreshTokenRepository.GetAsync(t => t.UserId == userId && !t.IsRevoked);
+            var tokens = await _unitOfWork.Repository<RefreshToken>().GetAsync(t => t.UserId == userId && !t.IsRevoked);
 
             foreach (var token in tokens)
             {
                 token.IsRevoked = true;
                 token.RevokedReason = reason;
-                _refreshTokenRepository.Update(token);
+                _unitOfWork.Repository<RefreshToken>().Update(token);
             }
 
-            await _refreshTokenRepository.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
         }
 
         private static string GenerateSecureToken()

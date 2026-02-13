@@ -1,4 +1,4 @@
-﻿using CleanArc.Core.Entities;
+using CleanArc.Core.Entities;
 using CleanArc.Core.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 
@@ -17,8 +17,8 @@ namespace CleanArc.Infrastructure.Services
         }
         public async Task ProcessRejectedRequestsAsync(int animalId, int AcceptedReqId)
         {
-            var rejectedRequests = await _Uow.RequestRepository.GetAsync(ar => ar.AnimalId == animalId && ar.Reqid != AcceptedReqId && ar.Status == "Pending");
-            var rejectedRequestsUsersIds = rejectedRequests.Select(r => r.Useridreq).ToList();
+            var rejectedRequests = await _Uow.Repository<Request>().GetAsync(ar => ar.AnimalId == animalId && ar.Id != AcceptedReqId && ar.Status == "Pending");
+            var rejectedRequestsUsersIds = rejectedRequests.Select(r => r.RequesterId).ToList();
             var notifications = rejectedRequestsUsersIds.Select(userId => new Notification
             {
                 UserId = userId,
@@ -27,7 +27,7 @@ namespace CleanArc.Infrastructure.Services
                 IsRead = false
             }).ToList();
             await _Uow.Repository<Notification>().AddRangeAsync(notifications);
-             _Uow.RequestRepository.RemoveRange(rejectedRequests);
+             _Uow.Repository<Request>().RemoveRange(rejectedRequests);
             await _Uow.SaveChangesAsync();
             if (rejectedRequestsUsersIds.Count > 0)
                 await _notificationService.SendNotificationAsync(rejectedRequestsUsersIds,"ReceiveNotification", "Your adoption request was rejected.");

@@ -1,4 +1,4 @@
-namespace CleanArc.Core.Entites;
+namespace CleanArc.Core.Entities;
 
 public class Message
 {
