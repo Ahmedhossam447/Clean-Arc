@@ -56,6 +56,7 @@ CleanArc.Testing       → Unit + architecture tests
 - **Shipment Tracking** – Per-item status (Pending → Processing → Shipped → Delivered)
 - **Shelter Sales Dashboard** – Shelters view paid orders containing their products
 - **User Authentication** – JWT with refresh tokens, role assignment (User/Shelter)
+- **Social Login** – Google Authentication with automatic account linking for existing users
 - **Real-time Chat** – SignalR for user-to-user and user-to-shelter messaging
 - **Real-time Notifications** – SignalR notifications for single or multiple users
 - **Photo Management** – AWS S3 with compression; Hangfire for async deletion
@@ -140,6 +141,26 @@ Domain event:
   → Consumers: send email, write audit log (MassTransit + RabbitMQ)
 ```
 
+### Google Authentication Flow
+
+```
+Client → Google OAuth 2.0
+  → User logs in & grants consent
+  → Google issues OpenID Connect JWT (id_token)
+
+Client → POST /api/auth/google-login { "tokenId": "..." }
+  → Validate Google JWT signature & audience
+  → IF User exists (by email):
+      → Ensure EmailConfirmed = true
+      → Add UserLogin mapping (links Google ID to existing account)
+  → IF User is new:
+      → Generate unique username (email prefix + random) and secure password
+      → Register User in Db with Role "User" and EmailConfirmed = true
+      → Add UserLogin mapping
+  → Generate system JWT Access Token & Refresh Token
+  → Return Tokens to Client
+```
+
 ### Stock Concurrency Strategy
 
 - **Atomic SQL** – `UPDATE Products SET StockQuantity = StockQuantity - @qty WHERE Id = @id AND StockQuantity >= @qty`
@@ -210,7 +231,7 @@ Swagger at `/swagger`, Hangfire at `/jobs`. Roles seeded on startup.
 
 ## API Overview
 
-- **Auth** – Register, login, refresh, logout, confirm email, forgot/reset password
+- **Auth** – Register, login, google-login, refresh, logout, confirm email, forgot/reset password
 - **Animals** – CRUD, search, available for adoption, adopt
 - **Products** – CRUD (Shelter)
 - **Orders** – Create, add/remove items, checkout, sales (Shelter), shipment status

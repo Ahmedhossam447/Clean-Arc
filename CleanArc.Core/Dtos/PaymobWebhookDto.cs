@@ -1,6 +1,6 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-namespace CleanArc.Application.Dtos
+namespace CleanArc.Core.Dtos
 {
     public class PaymobWebhookDto
     {

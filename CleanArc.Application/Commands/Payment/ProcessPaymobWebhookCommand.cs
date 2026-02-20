@@ -1,4 +1,4 @@
-using CleanArc.Application.Dtos;
+using CleanArc.Core.Dtos;
 using CleanArc.Core.Primitives;
 using MediatR;
 

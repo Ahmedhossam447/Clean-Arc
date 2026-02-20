@@ -1,7 +1,6 @@
 using CleanArc.Application.Commands.Payment;
-using CleanArc.Application.Common.Security;
-using CleanArc.Application.Dtos;
 using CleanArc.Application.Handlers.CommandsHandler.Payment;
+using CleanArc.Core.Dtos;
 using CleanArc.Core.Entities;
 using CleanArc.Core.Interfaces;
 using CleanArc.Testing.Unit.Extensions;

@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CleanArc.Infrastructure.Consumers;
+using CleanArc.Infrastructure.Security;
 
 namespace CleanArc.Infrastructure
 {
@@ -109,6 +110,7 @@ namespace CleanArc.Infrastructure
             {
                 client.BaseAddress = new Uri("https://accept.paymob.com/api/");
             });
+            services.AddSingleton<IPaymobSecurity, PaymobSecurity>();
 
             // Seed roles on startup
             services.AddHostedService<RoleSeederWorker>();

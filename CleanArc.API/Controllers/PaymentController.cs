@@ -1,5 +1,5 @@
 using CleanArc.Application.Commands.Payment;
-using CleanArc.Application.Dtos;
+using CleanArc.Core.Dtos;
 using CleanArc.API.Extensions;
 using CleanArc.Core.Entities;
 using MediatR;

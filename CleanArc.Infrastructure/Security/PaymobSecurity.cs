@@ -1,15 +1,11 @@
-using CleanArc.Application.Dtos;
+using CleanArc.Core.Dtos;
+using CleanArc.Core.Interfaces;
 using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CleanArc.Application.Common.Security
+namespace CleanArc.Infrastructure.Security
 {
-    public interface IPaymobSecurity
-    {
-        bool ValidateHmac(PaymobTransactionObj transaction, string receivedHmac);
-    }
-
     public class PaymobSecurity : IPaymobSecurity
     {
         private readonly string _hmacSecret;

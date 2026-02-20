@@ -1,5 +1,6 @@
 using CleanArc.Application.Commands.Payment;
-using CleanArc.Application.Common.Security;
+using CleanArc.Core.Dtos;
+using CleanArc.Core.Interfaces;
 using CleanArc.Core.Entities;
 using CleanArc.Core.Interfaces;
 using CleanArc.Core.Primitives;
