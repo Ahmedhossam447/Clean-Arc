@@ -10,9 +10,9 @@ I built an [MVC version](https://github.com/Ahmedhossam447/Pet-Adoption) of this
 ## Architecture
 
 ```
-CleanArc.Core          → Domain entities, interfaces, primitives, email templates (no dependencies)
+CleanArc.Core          → Domain entities, interfaces, primitives, event publisher interface (no dependencies)
 CleanArc.Application   → Commands, queries, handlers, validators (depends on Core only)
-CleanArc.Infrastructure → Database, S3, email, identity, RabbitMQ, MassTransit consumers (depends on Core only)
+CleanArc.Infrastructure → Database, S3, Paymob webhook security, RabbitMQ, MassTransit consumers (depends on Core only)
 CleanArc.API           → Controllers, middleware, DI composition (depends on Application + Infrastructure)
 CleanArc.Testing       → Unit + architecture tests
 ```
