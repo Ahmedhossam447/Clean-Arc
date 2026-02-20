@@ -26,22 +26,21 @@ namespace CleanArc.API.Controllers
         public async Task<ActionResult<RegisterResponse>> Register(RegisterCommand register)
         {
             var result = await _mediator.Send(register);
-            if (result.Succeeded)
-            {
-                return Ok(result);
-            }
-            return BadRequest(result);
+            return result.ToActionResult(this);
         }
 
         [HttpPost("login")]
         public async Task<ActionResult<LoginResponse>> Login(LoginCommand login)
         {
             var result = await _mediator.Send(login);
-            if (result.Succeeded)
-            {
-                return Ok(result);
-            }
-            return Unauthorized(result);
+            return result.ToActionResult(this);
+        }
+
+        [HttpPost("google-login")]
+        public async Task<ActionResult<GoogleLoginResponse>> GoogleLogin(GoogleLoginCommand login)
+        {
+            var result = await _mediator.Send(login);
+            return result.ToActionResult(this);
         }
 
         [HttpPost("refresh")]

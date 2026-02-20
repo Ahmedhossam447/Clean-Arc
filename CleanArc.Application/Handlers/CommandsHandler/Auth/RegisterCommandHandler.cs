@@ -5,10 +5,11 @@ using CleanArc.Core.Interfaces;
 using MediatR;
 using System.Net;
 using Microsoft.Extensions.Configuration;
+using CleanArc.Core.Primitives;
 
 namespace CleanArc.Application.Handlers.CommandsHandler.Auth
 {
-    public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterResponse>
+    public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<RegisterResponse>>
     {
         private readonly IAuthService _authService;
         private readonly IEmailService _emailService;
@@ -24,12 +25,13 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Auth
             _configuration = configuration;
         }
 
-        public async Task<RegisterResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
+        public async Task<Result<RegisterResponse>> Handle(RegisterCommand request, CancellationToken cancellationToken)
         {
             var result = await _authService.RegisterUserAsync(
                 request.Username, 
                 request.Password, 
                 request.Email,
+                GoogleAuth: false,
                 request.Role,
                 request.FullName,
                 request.PhotoUrl,
@@ -58,19 +60,12 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Auth
                     );
                 }
 
-                return new RegisterResponse
-                {
-                    Succeeded = true,
-                    Errors = Array.Empty<string>()
-                };
+                return new RegisterResponse();
             }
             else
             {
-                return new RegisterResponse
-                {
-                    Succeeded = false,
-                    Errors = result.Errors
-                };
+                // Join errors into a single string or just take the first one
+                return Result<RegisterResponse>.Failure(UserErrors.RegistrationFailed(string.Join(" ", result.Errors)));
             }
         }
     }

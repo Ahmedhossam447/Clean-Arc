@@ -1,9 +1,10 @@
-﻿using CleanArc.Application.Contracts.Responses.Auth;
+﻿using CleanArc.Core.Primitives;
+using CleanArc.Application.Contracts.Responses.Auth;
 using MediatR;
 
 namespace CleanArc.Application.Commands.Auth
 {
-    public class RegisterCommand : IRequest<RegisterResponse>
+    public class RegisterCommand : IRequest<Result<RegisterResponse>>
     {
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;

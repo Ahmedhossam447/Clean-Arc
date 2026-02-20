@@ -49,6 +49,38 @@ namespace CleanArc.Infrastructure.Services
             return await _userManager.IsEmailConfirmedAsync(user);
         }
 
+        public async Task<bool> VerifyEmailForGoogleAuthAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return false;
+
+            if (user.EmailConfirmed)
+                return true;
+
+            user.EmailConfirmed = true;
+            var result = await _userManager.UpdateAsync(user);
+            return result.Succeeded;
+        }
+
+        public async Task<bool> AddExternalLoginAsync(string email, string provider, string providerKey)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return false;
+
+            var existingLogins = await _userManager.GetLoginsAsync(user);
+            if (existingLogins.Any(l => l.LoginProvider == provider && l.ProviderKey == providerKey))
+            {
+                return true; // Already linked
+            }
+
+            var info = new UserLoginInfo(provider, providerKey, provider);
+            var result = await _userManager.AddLoginAsync(user, info);
+            
+            return result.Succeeded;
+        }
+
         public async Task<AuthUser?> LoginUserAsync(string email, string password, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
@@ -75,6 +107,7 @@ namespace CleanArc.Infrastructure.Services
             string username, 
             string password, 
             string email,
+            bool GoogleAuth,
             string role = "User",
             string? fullName = null,
             string? photoUrl = null,
@@ -84,7 +117,7 @@ namespace CleanArc.Infrastructure.Services
         {
             if (string.IsNullOrWhiteSpace(email))
                 return (false, new[] { "Email is required." });
-            if (string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(password)&&!GoogleAuth)
                 return (false, new[] { "Password is required." });
             if (string.IsNullOrWhiteSpace(username))
                 return (false, new[] { "Username is required." });
@@ -112,6 +145,8 @@ namespace CleanArc.Infrastructure.Services
                 Bio = bio,
                 PhoneNumber = phoneNumber
             };
+            if(GoogleAuth)
+                newUser.EmailConfirmed = true; // Assume email is confirmed for Google-authenticated users
 
             var result = await _userManager.CreateAsync(newUser, password);
             if (result.Succeeded)

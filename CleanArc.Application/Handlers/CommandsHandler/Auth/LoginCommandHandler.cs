@@ -6,7 +6,7 @@ using MediatR;
 
 namespace CleanArc.Application.Handlers.CommandsHandler.Auth
 {
-    public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
+    public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<LoginResponse>>
     {
         private readonly IAuthService _authService;
         private readonly ITokenService _tokenService;
@@ -17,26 +17,18 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Auth
             _tokenService = tokenService;
         }
 
-        public async Task<LoginResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
+        public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
             var authUser = await _authService.LoginUserAsync(request.Email, request.Password, cancellationToken);
             
             if (authUser == null)
             {
-                return new LoginResponse
-                {
-                    Succeeded = false,
-                    Errors = new List<string> { UserErrors.InvalidCredentials.Description }
-                };
+                return Result<LoginResponse>.Failure(UserErrors.InvalidCredentials);
             }
             var emailconfirmed = await _authService.IsEmailConfirmedAsync(authUser.Email, cancellationToken);
             if (!emailconfirmed)
             {
-                return new LoginResponse
-                {
-                    Succeeded = false,
-                    Errors = new List<string> { EmailErrors.NotConfirmed.Description }
-                };
+                return Result<LoginResponse>.Failure(EmailErrors.NotConfirmed);
             }
 
             var token = await _tokenService.GenerateRefreshTokenAsync(authUser.Id);
@@ -44,12 +36,9 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Auth
 
             return new LoginResponse
             {
-                Succeeded = true,
                 RefreshToken = token.Token,
                 RefreshTokenExpiry = token.ExpiresAt,
                 AccessToken = accessToken,
-                Errors = new List<string>()
-
             };
         }
     }

@@ -29,4 +29,16 @@ public static class UserErrors
     public static readonly Error AdopterNotFound = new(
         "User.AdopterNotFound",
         "The adopter with the specified identifier was not found.");
+
+    public static Error RegistrationFailed(string errors) => new(
+        "User.RegistrationFailed",
+        errors);
+
+    public static Error GoogleRegistrationFailed(string errors) => new(
+        "GoogleAuth.RegistrationFailed",
+        errors);
+
+    public static readonly Error GoogleUserRetrievalFailed = new(
+        "GoogleAuth.UserRetrievalFailed",
+        "Failed to retrieve the user after Google registration.");
 }

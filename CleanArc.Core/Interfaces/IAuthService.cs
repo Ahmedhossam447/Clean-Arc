@@ -8,6 +8,7 @@ namespace CleanArc.Core.Interfaces
             string username, 
             string password, 
             string email,
+            bool GoogleAuth,
             string role = "User",
             string? fullName = null,
             string? photoUrl = null,
@@ -18,6 +19,8 @@ namespace CleanArc.Core.Interfaces
         // Read operations - cancellable
         Task<AuthUser?> LoginUserAsync(string email, string password, CancellationToken cancellationToken = default);
         Task<bool> IsEmailConfirmedAsync(string email, CancellationToken cancellationToken = default);
+        Task<bool> VerifyEmailForGoogleAuthAsync(string email);
+        Task<bool> AddExternalLoginAsync(string email, string provider, string providerKey);
         
         // Write operations - not cancellable
         Task<string> GenerateEmailConfirmationTokenAsync(string email);
