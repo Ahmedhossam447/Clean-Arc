@@ -16,6 +16,7 @@ namespace CleanArc.Application
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AddApplicationRegistration).Assembly));
             services.AddFluentValidation(typeof(AddApplicationRegistration));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(CachingBehaviour<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestPipline<,>));
         }
     }
 }
