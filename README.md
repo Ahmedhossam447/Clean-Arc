@@ -56,7 +56,7 @@ CleanArc.Testing       → Unit + architecture tests
 - **Shipment Tracking** – Per-item status (Pending → Processing → Shipped → Delivered)
 - **Shelter Sales Dashboard** – Shelters view paid orders containing their products
 - **User Authentication** – JWT with refresh tokens, role assignment (User/Shelter)
-- **Social Login** – Google Authentication with automatic account linking for existing users
+- **Social Login** – OAuth 2.0 Authentication with automatic account linking for existing users
 - **Real-time Chat** – SignalR for user-to-user and user-to-shelter messaging
 - **Real-time Notifications** – SignalR notifications for single or multiple users
 - **Photo Management** – AWS S3 with compression; Hangfire for async deletion
@@ -141,18 +141,18 @@ Domain event:
   → Consumers: send email, write audit log (MassTransit + RabbitMQ)
 ```
 
-### Google Authentication Flow
+### OAuth 2.0 Authentication Flow
 
 ```
-Client → Google OAuth 2.0
+Client → OAuth 2.0 Provider (e.g., Google)
   → User logs in & grants consent
-  → Google issues OpenID Connect JWT (id_token)
+  → Provider issues OpenID Connect JWT (id_token)
 
 Client → POST /api/auth/google-login { "tokenId": "..." }
-  → Validate Google JWT signature & audience
+  → Validate Provider JWT signature & audience
   → IF User exists (by email):
       → Ensure EmailConfirmed = true
-      → Add UserLogin mapping (links Google ID to existing account)
+      → Add UserLogin mapping (links Provider ID to existing account)
   → IF User is new:
       → Generate unique username (email prefix + random) and secure password
       → Register User in Db with Role "User" and EmailConfirmed = true
