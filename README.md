@@ -27,7 +27,6 @@ graph TD
     subgraph API[CleanArc.API]
         Controllers
         ExceptionHandler
-        SignalR[SignalR Hubs]
     end
 
     Controllers -->|MediatR| Application
@@ -35,7 +34,6 @@ graph TD
     subgraph Application[CleanArc.Application]
         Validation[FluentValidation]
         Handlers[Command / Query Handlers]
-        EventPub[IEventPublisher]
     end
 
     Handlers -.->|depends on| Core
@@ -44,6 +42,7 @@ graph TD
         Entities
         Interfaces
         ResultPattern["Result‹T› Pattern"]
+        EventPub[IEventPublisher]
     end
 
     Interfaces -.->|implemented by| Infrastructure
@@ -51,6 +50,7 @@ graph TD
     subgraph Infrastructure[CleanArc.Infrastructure]
         Repositories[UnitOfWork + Repositories]
         Services[Auth · Image · Payment]
+        SignalR[SignalR Hubs]
         MassTransit[MassTransit Consumers]
         Hangfire[Hangfire Jobs]
     end
