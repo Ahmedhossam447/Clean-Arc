@@ -17,6 +17,182 @@ CleanArc.API           → Controllers, middleware, DI composition (depends on A
 CleanArc.Testing       → Unit + architecture tests
 ```
 
+```mermaid
+graph TB
+    %% ======================== CLIENT ========================
+    Client["🖥️ Client"]
+
+    %% ======================== API LAYER ========================
+    subgraph API["CleanArc.API"]
+        direction TB
+        Controllers["Controllers<br/>(Auth · Animals · Orders · Products<br/>Payments · Requests · Chat · Users)"]
+        GlobalEx["GlobalExceptionHandler<br/>(ProblemDetails RFC 7807)"]
+        Swagger["Swagger + JWT Auth"]
+        Middleware["JWT Middleware<br/>+ Role Authorization"]
+    end
+
+    %% ======================== APPLICATION LAYER ========================
+    subgraph Application["CleanArc.Application"]
+        direction TB
+        MediatR["MediatR Pipeline"]
+
+        subgraph Pipeline["Pipeline Behaviors"]
+            Validation["FluentValidation<br/>Behavior"]
+            Caching["ICacheableQuery<br/>Behavior"]
+        end
+
+        subgraph CQRS["CQRS"]
+            Commands["Commands<br/>(Create · Update · Delete<br/>Adopt · Checkout · Accept)"]
+            Queries["Queries<br/>(Get · List · Search<br/>Available · Dashboard)"]
+        end
+
+        subgraph Handlers["Command & Query Handlers"]
+            AuthH["Auth Handlers<br/>Login · GoogleLogin · Register"]
+            AnimalH["Animal Handlers<br/>Create · Update · Delete · Adopt"]
+            OrderH["Order Handlers<br/>Create · AddItem · RemoveItem<br/>Checkout · UpdateItemStatus"]
+            ProductH["Product Handlers<br/>Create · Delete"]
+            RequestH["Request Handlers<br/>Create · Accept · Reject<br/>Update · Delete"]
+            PaymentH["Payment Handler<br/>ProcessPaymobWebhook"]
+        end
+
+        EventPublisher["IEventPublisher<br/>(Core Abstraction)"]
+    end
+
+    %% ======================== CORE LAYER ========================
+    subgraph Core["CleanArc.Core"]
+        direction TB
+        Entities["Entities<br/>(Animal · Order · Product<br/>Request · RefreshToken<br/>MedicalRecord · Vaccination)"]
+        Interfaces["Interfaces<br/>(IUnitOfWork · IRepository · IAuthService<br/>ITokenService · IPaymentService<br/>IImageService · IUserService<br/>IGoogleAuthService · INotificationService)"]
+        Primitives["Primitives<br/>(Result‹T› · Error · UserErrors)"]
+        DomainEvents["Domain Events<br/>(AnimalAdoptedEvent)"]
+    end
+
+    %% ======================== INFRASTRUCTURE LAYER ========================
+    subgraph Infrastructure["CleanArc.Infrastructure"]
+        direction TB
+
+        subgraph DataAccess["Data Access"]
+            DbContext["AppDbContext<br/>(EF Core)"]
+            UoW["UnitOfWork<br/>Begin · Commit · Rollback<br/>ExecuteSqlRaw"]
+            GenericRepo["Repository‹T›<br/>+ Eager Loading"]
+            AnimalRepo["AnimalRepository<br/>(GetAvailableForAdoption)"]
+        end
+
+        subgraph Services["Infrastructure Services"]
+            AuthSvc["AuthService<br/>(Identity + JWT)"]
+            TokenSvc["TokenService<br/>(Access + Refresh)"]
+            GoogleSvc["GoogleAuthService<br/>(OAuth 2.0 JWT Validation)"]
+            ImageSvc["ImageService<br/>(S3 Upload · Compress)"]
+            PaymentSvc["PaymentService<br/>(Paymob API)"]
+            PaymobSec["PaymobSecurity<br/>(HMAC-SHA512)"]
+            NotifSvc["NotificationService<br/>(SignalR)"]
+        end
+
+        subgraph Realtime["Real-time"]
+            ChatHub["ChatHub<br/>(SignalR)"]
+            NotifHub["NotificationHub<br/>(SignalR)"]
+        end
+
+        subgraph BackgroundJobs["Background Jobs"]
+            HangfireServer["Hangfire Server"]
+        end
+
+        subgraph Messaging["Domain Event Bus"]
+            MassTransitBus["MassTransit Bus"]
+            Consumers["Consumers<br/>📧 EmailConsumer<br/>📋 AuditLogConsumer"]
+        end
+    end
+
+    %% ======================== EXTERNAL SERVICES ========================
+    subgraph External["External Services"]
+        direction TB
+        SQLServer[("🗄️ SQL Server")]
+        Redis[("⚡ Redis<br/>Cache + Hangfire")]
+        RabbitMQ[("🐇 RabbitMQ")]
+        S3["☁️ AWS S3"]
+        Paymob["💳 Paymob"]
+        Google["🔐 Google OAuth"]
+    end
+
+    %% ======================== TESTING ========================
+    subgraph Testing["CleanArc.Testing"]
+        UnitTests["94 Unit Tests<br/>(xUnit · NSubstitute · FluentAssertions)"]
+        ArchTests["Architecture Tests<br/>(NetArchTest)"]
+    end
+
+    %% ======================== CONNECTIONS ========================
+
+    %% Client → API
+    Client -->|"HTTP/HTTPS<br/>REST API"| Controllers
+    Client <-->|"WebSocket"| ChatHub
+    Client <-->|"WebSocket"| NotifHub
+
+    %% API internal
+    Controllers --> Middleware
+    Controllers --> GlobalEx
+
+    %% API → Application (MediatR)
+    Controllers -->|"IMediator.Send()"| MediatR
+    MediatR --> Validation
+    Validation --> Caching
+    Caching --> CQRS
+    Commands --> Handlers
+    Queries --> Handlers
+
+    %% Handlers → Core (Domain Logic)
+    Handlers -.->|"uses"| Entities
+    Handlers -.->|"uses"| Interfaces
+    Handlers -.->|"uses"| Primitives
+
+    %% Handlers → Event Publisher
+    AnimalH -->|"Publish<br/>AnimalAdoptedEvent"| EventPublisher
+    EventPublisher -.->|"abstraction"| DomainEvents
+
+    %% Application → Infrastructure (via Core interfaces)
+    Interfaces -.->|"implemented by"| DataAccess
+    Interfaces -.->|"implemented by"| Services
+
+    %% Infrastructure → External
+    DbContext -->|"EF Core"| SQLServer
+    UoW -->|"Transactions"| SQLServer
+    Caching -->|"Cache-Aside<br/>Read/Invalidate"| Redis
+    HangfireServer -->|"Job Storage"| Redis
+    ImageSvc -->|"Upload/Delete"| S3
+    PaymentSvc -->|"Auth Token<br/>Create Order<br/>Payment Key"| Paymob
+    PaymobSec -->|"HMAC Validation"| Paymob
+    GoogleSvc -->|"JWT Validation"| Google
+    MassTransitBus -->|"Publish"| RabbitMQ
+    RabbitMQ -->|"Consume"| Consumers
+
+    %% Background Jobs
+    AnimalH -->|"Enqueue<br/>Photo Deletion"| HangfireServer
+    HangfireServer -->|"Execute"| ImageSvc
+
+    %% Notifications
+    RequestH -->|"Notify"| NotifSvc
+    NotifSvc --> NotifHub
+
+    %% Testing
+    Testing -.->|"tests"| Application
+
+    %% ======================== STYLES ========================
+    classDef apiStyle fill:#4A90D9,stroke:#2C5F8A,color:#fff
+    classDef appStyle fill:#7B68EE,stroke:#5B4ACE,color:#fff
+    classDef coreStyle fill:#E8A838,stroke:#C08420,color:#fff
+    classDef infraStyle fill:#50C878,stroke:#3A9A5C,color:#fff
+    classDef externalStyle fill:#FF6B6B,stroke:#CC5555,color:#fff
+    classDef testStyle fill:#A0A0A0,stroke:#707070,color:#fff
+    classDef clientStyle fill:#333,stroke:#111,color:#fff
+
+    class Client clientStyle
+    class API apiStyle
+    class Application appStyle
+    class Core coreStyle
+    class Infrastructure infraStyle
+    class External externalStyle
+    class Testing testStyle
+```
+
 ### Patterns & Practices
 
 - **Clean Architecture** – Core has no infrastructure dependencies; business logic stays isolated
