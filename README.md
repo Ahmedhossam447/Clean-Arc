@@ -244,4 +244,19 @@ Swagger at `/swagger`, Hangfire at `/jobs`. Roles seeded on startup.
 
 ## Testing
 
-Unit tests in `CleanArc.Testing` for CreateOrder, ProcessWebhook, CreateProduct, DeleteProduct, AdoptAnimal, DeleteAnimal handlers. Architecture tests via NetArchTest. NSubstitute, FluentAssertions.
+94 unit tests in `CleanArc.Testing` covering all command handlers across the application:
+
+| Domain | Handlers Tested |
+|--------|----------------|
+| **Auth** | Login, GoogleLogin, Register |
+| **Orders** | CreateOrder, AddOrderItem, RemoveOrderItem, UpdateOrderItemStatus, CheckoutOrder |
+| **Animals** | AdoptAnimal, CreateAnimal, DeleteAnimal, UpdateAnimal |
+| **Products** | CreateProduct, DeleteProduct |
+| **Payments** | ProcessPaymobWebhook |
+| **Requests** | CreateRequest, AcceptRequest, RejectRequest, DeleteRequest, UpdateRequest |
+
+Architecture tests via NetArchTest. NSubstitute for mocking, FluentAssertions for readable assertions.
+
+```bash
+dotnet test "Clean Arc.sln"
+```
