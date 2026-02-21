@@ -26,7 +26,7 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Auth
         public async Task<Result<GoogleLoginResponse>> Handle(GoogleLoginCommand request, CancellationToken cancellationToken)
         {
             var payload =await _googleAuthService.ValidateTokenAsync(request.TokenId);
-            if (payload == null)
+            if (payload.IsFailure)
             {
                 return payload.Error;
             }
