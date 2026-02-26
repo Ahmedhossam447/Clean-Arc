@@ -277,6 +277,8 @@ docker-compose up --build
 
 This starts the API, SQL Server, Redis, and RabbitMQ. The API is available at `http://localhost:8080`.
 
+> **Note:** You still need to configure `appsettings.json` with your AWS S3 credentials, Paymob API keys, JWT secret, Google OAuth client ID, and email settings before running.
+
 ### Local
 
 **Prerequisites:** .NET 10 SDK, SQL Server, Redis, RabbitMQ, AWS (S3), Paymob
