@@ -284,8 +284,8 @@ This starts the API, SQL Server, Redis, and RabbitMQ. The API is available at `h
 **Prerequisites:** .NET 10 SDK, SQL Server, Redis, RabbitMQ, AWS (S3), Paymob
 
 1. Configure `appsettings.json` (connection strings, JWT, AWS, Paymob, email).
-2. `dotnet ef database update --project CleanArc.Infrastructure --startup-project "CleanArc.API"`
-3. Start Redis and RabbitMQ.
+2. Start SQL Server, Redis, and RabbitMQ.
+3. `dotnet ef database update --project CleanArc.Infrastructure --startup-project "CleanArc.API"`
 4. `dotnet run --project "CleanArc.API"`
 
 Swagger at `/swagger`, Hangfire at `/jobs`. Roles seeded on startup.
