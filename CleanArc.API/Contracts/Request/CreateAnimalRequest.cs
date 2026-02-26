@@ -9,7 +9,6 @@ namespace CleanArc.API.Contracts.Request
             public string? Breed { get; set; }
             public string? Gender { get; set; }
             public string? About { get; set; }
-            public string? OwnerId { get; set; }
 
             // Medical info
             public double Weight { get; set; }

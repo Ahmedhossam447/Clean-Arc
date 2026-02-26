@@ -28,6 +28,10 @@ public class AnimalController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<CreateAnimalResponse>> CreateAnimal([FromForm] CreateAnimalRequest request)
     {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
         var command = new CreateAnimalCommand
         {
             Name = request.Name,
@@ -36,7 +40,7 @@ public class AnimalController : ControllerBase
             Breed = request.Breed,
             Gender = request.Gender,
             About = request.About,
-            OwnerId = request.OwnerId,
+            OwnerId = userId,
             Weight = request.Weight,
             Height = request.Height,
             BloodType = request.BloodType,
