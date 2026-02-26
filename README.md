@@ -87,6 +87,7 @@ graph TD
 - Hangfire (background jobs), Redis (cache, Hangfire storage)
 - MassTransit + RabbitMQ (domain events)
 - AWS S3, Paymob
+- Docker + Docker Compose
 
 ---
 
@@ -255,16 +256,28 @@ Client → POST /api/auth/google-login { "tokenId": "..." }
 
 ```
 CleanArc/
-├── CleanArc.API/           # API (controllers, middleware)
-├── CleanArc.Core/       # Domain (entities, interfaces, primitives)
-├── CleanArc.Application/  # Commands, queries, handlers, validators
-├── CleanArc.Infrastructure/ # DbContext, repositories, UnitOfWork, services, hubs
-└── CleanArc.Testing/    # Unit tests
+├── CleanArc.API/             # API (controllers, middleware, Dockerfile)
+├── CleanArc.Core/            # Domain (entities, interfaces, primitives)
+├── CleanArc.Application/     # Commands, queries, handlers, validators
+├── CleanArc.Infrastructure/  # DbContext, repositories, UnitOfWork, services, hubs
+├── CleanArc.Testing/         # Unit tests
+├── docker-compose.yml        # SQL Server, Redis, RabbitMQ, API
+└── docker-compose.override.yml
 ```
 
 ---
 
 ## Setup
+
+### Docker (recommended)
+
+```bash
+docker-compose up --build
+```
+
+This starts the API, SQL Server, Redis, and RabbitMQ. The API is available at `http://localhost:8080`.
+
+### Local
 
 **Prerequisites:** .NET 10 SDK, SQL Server, Redis, RabbitMQ, AWS (S3), Paymob
 

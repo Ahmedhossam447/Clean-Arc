@@ -37,6 +37,7 @@ namespace CleanArc.Infrastructure.Persistence.Data.Config
             builder.HasMany(a => a.Requests)
                 .WithOne(r => r.Animal)
                 .HasForeignKey(a => a.AnimalId);
+            builder.Property(a => a.OwnerId).HasMaxLength(450);
         }
     }
 }

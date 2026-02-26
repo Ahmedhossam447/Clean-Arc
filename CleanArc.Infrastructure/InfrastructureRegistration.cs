@@ -22,7 +22,16 @@ namespace CleanArc.Infrastructure
         public static void AddInfrastructureServices(this IServiceCollection services, string connection, IConfiguration configuration)
         {
             services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(connection));
+                options.UseSqlServer(
+        connection,
+        sqlServerOptionsAction: sqlOptions =>
+        {
+            // This is the magic line!
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5, // Try 5 times
+                maxRetryDelay: TimeSpan.FromSeconds(3), // Wait 3 seconds between retries
+                errorNumbersToAdd: null);
+        }));
 
             // Register Identity
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -69,11 +78,11 @@ namespace CleanArc.Infrastructure
                 
                 x.UsingRabbitMq((context, cfg) =>
                 {
-                    cfg.Host("localhost", "/", h =>
-                    {
-                        h.Username("guest");
-                        h.Password("guest");
-                    });
+                cfg.Host(configuration["RabbitMQ:HostName"] ?? "localhost", "/", h =>
+                {
+                    h.Username("guest");
+                    h.Password("guest");
+                });
 
                     // Queue for email notifications
                     cfg.ReceiveEndpoint("animal-adopted-notifications", e =>

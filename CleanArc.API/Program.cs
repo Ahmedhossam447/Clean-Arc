@@ -1,8 +1,11 @@
+using CleanArc.API.Extensions;
 using CleanArc.API.Middleware;
 using CleanArc.Application;
 using CleanArc.Core.Interfaces;
 using CleanArc.Infrastructure;
 using CleanArc.Infrastructure.Hubs;
+using CleanArc.Infrastructure.Persistence.Data;
+using Google;
 using Hangfire;
 using Hangfire.Redis.StackExchange;
 using huzcodes.Extensions.Exceptions;
@@ -14,14 +17,14 @@ namespace CleanArc.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public async static Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
 
             builder.Services.AddControllers();
-            var connection = builder.Configuration.GetSection("ConnectionStrings:AnimalConnection").Value;
+            var connection = builder.Configuration.GetSection("ConnectionStrings:DefaultConnection").Value;
             builder.Services.AddInfrastructureServices(connection,builder.Configuration);
             builder.Services.AddApplicationServices();
             builder.Services.AddScoped<GlobalExceptionHandler>();
@@ -80,6 +83,20 @@ namespace CleanArc.API
 
             var app = builder.Build();
 
+            // --- UPDATE THIS BLOCK ---
+            // Only run auto-migrations if the app is actually running inside the Docker container
+            if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true")
+            {
+                using (var scope = app.Services.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    await dbContext.Database.MigrateAsync();
+                }
+            }
+            // -------------------------
+
+            // app.UseSwagger(), etc...
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
@@ -92,7 +109,10 @@ namespace CleanArc.API
                 c.RoutePrefix = "swagger"; // Swagger UI will be available at /swagger
                 c.DisplayRequestDuration();
             });
-            app.UseHangfireDashboard("/jobs");
+            app.UseHangfireDashboard("/jobs", new DashboardOptions
+            {
+                Authorization = new[] { new AllowAllConnectionsFilter() }
+            });
             app.UseMiddleware<GlobalExceptionHandler>();
             app.UseHttpsRedirection();
             app.UseAuthentication();

@@ -22,7 +22,7 @@ namespace CleanArc.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("CleanArc.Core.Entites.AdoptionAuditLog", b =>
+            modelBuilder.Entity("CleanArc.Core.Entities.AdoptionAuditLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -89,13 +89,14 @@ namespace CleanArc.Infrastructure.Migrations
                     b.ToTable("AdoptionAuditLogs");
                 });
 
-            modelBuilder.Entity("CleanArc.Core.Entites.Animal", b =>
+            modelBuilder.Entity("CleanArc.Core.Entities.Animal", b =>
                 {
-                    b.Property<int>("AnimalId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("Id");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnimalId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("About")
                         .HasMaxLength(1000)
@@ -122,6 +123,11 @@ namespace CleanArc.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("OwnerId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("OwnerId");
+
                     b.Property<string>("Photo")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -137,17 +143,14 @@ namespace CleanArc.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("Userid")
-                        .HasColumnType("nvarchar(450)");
+                    b.HasKey("Id");
 
-                    b.HasKey("AnimalId");
-
-                    b.HasIndex("Userid");
+                    b.HasIndex("OwnerId");
 
                     b.ToTable("Animals");
                 });
 
-            modelBuilder.Entity("CleanArc.Core.Entites.MedicalRecord", b =>
+            modelBuilder.Entity("CleanArc.Core.Entities.MedicalRecord", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -190,7 +193,7 @@ namespace CleanArc.Infrastructure.Migrations
                     b.ToTable("MedicalRecords");
                 });
 
-            modelBuilder.Entity("CleanArc.Core.Entites.Message", b =>
+            modelBuilder.Entity("CleanArc.Core.Entities.Message", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -226,73 +229,6 @@ namespace CleanArc.Infrastructure.Migrations
                     b.HasIndex("SentAt");
 
                     b.ToTable("Messages");
-                });
-
-            modelBuilder.Entity("CleanArc.Core.Entites.Request", b =>
-                {
-                    b.Property<int>("Reqid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Reqid"));
-
-                    b.Property<int>("AnimalId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("Pending");
-
-                    b.Property<string>("Userid")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Useridreq")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Reqid");
-
-                    b.HasIndex("AnimalId");
-
-                    b.HasIndex("Userid");
-
-                    b.HasIndex("Useridreq");
-
-                    b.ToTable("Requests");
-                });
-
-            modelBuilder.Entity("CleanArc.Core.Entites.Vaccination", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("DateGiven")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ExpiryDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("MedicalRecordId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MedicalRecordId");
-
-                    b.ToTable("Vaccinations");
                 });
 
             modelBuilder.Entity("CleanArc.Core.Entities.Notification", b =>
@@ -549,6 +485,76 @@ namespace CleanArc.Infrastructure.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
+            modelBuilder.Entity("CleanArc.Core.Entities.Request", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("Id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AnimalId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("OwnerId");
+
+                    b.Property<string>("RequesterId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)")
+                        .HasColumnName("RequesterId");
+
+                    b.Property<string>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasDefaultValue("Pending");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AnimalId");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("RequesterId");
+
+                    b.ToTable("Requests");
+                });
+
+            modelBuilder.Entity("CleanArc.Core.Entities.Vaccination", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DateGiven")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MedicalRecordId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicalRecordId");
+
+                    b.ToTable("Vaccinations");
+                });
+
             modelBuilder.Entity("CleanArc.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -759,26 +765,26 @@ namespace CleanArc.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("CleanArc.Core.Entites.Animal", b =>
+            modelBuilder.Entity("CleanArc.Core.Entities.Animal", b =>
                 {
                     b.HasOne("CleanArc.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
-                        .HasForeignKey("Userid")
+                        .HasForeignKey("OwnerId")
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
-            modelBuilder.Entity("CleanArc.Core.Entites.MedicalRecord", b =>
+            modelBuilder.Entity("CleanArc.Core.Entities.MedicalRecord", b =>
                 {
-                    b.HasOne("CleanArc.Core.Entites.Animal", "Animal")
+                    b.HasOne("CleanArc.Core.Entities.Animal", "Animal")
                         .WithOne("MedicalRecord")
-                        .HasForeignKey("CleanArc.Core.Entites.MedicalRecord", "AnimalId")
+                        .HasForeignKey("CleanArc.Core.Entities.MedicalRecord", "AnimalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Animal");
                 });
 
-            modelBuilder.Entity("CleanArc.Core.Entites.Message", b =>
+            modelBuilder.Entity("CleanArc.Core.Entities.Message", b =>
                 {
                     b.HasOne("CleanArc.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
@@ -791,40 +797,6 @@ namespace CleanArc.Infrastructure.Migrations
                         .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("CleanArc.Core.Entites.Request", b =>
-                {
-                    b.HasOne("CleanArc.Core.Entites.Animal", "Animal")
-                        .WithMany("Requests")
-                        .HasForeignKey("AnimalId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("CleanArc.Infrastructure.Identity.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("Userid")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CleanArc.Infrastructure.Identity.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("Useridreq")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Animal");
-                });
-
-            modelBuilder.Entity("CleanArc.Core.Entites.Vaccination", b =>
-                {
-                    b.HasOne("CleanArc.Core.Entites.MedicalRecord", "MedicalRecord")
-                        .WithMany("Vaccinations")
-                        .HasForeignKey("MedicalRecordId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MedicalRecord");
                 });
 
             modelBuilder.Entity("CleanArc.Core.Entities.Notification", b =>
@@ -895,6 +867,40 @@ namespace CleanArc.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("CleanArc.Core.Entities.Request", b =>
+                {
+                    b.HasOne("CleanArc.Core.Entities.Animal", "Animal")
+                        .WithMany("Requests")
+                        .HasForeignKey("AnimalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CleanArc.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CleanArc.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("RequesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Animal");
+                });
+
+            modelBuilder.Entity("CleanArc.Core.Entities.Vaccination", b =>
+                {
+                    b.HasOne("CleanArc.Core.Entities.MedicalRecord", "MedicalRecord")
+                        .WithMany("Vaccinations")
+                        .HasForeignKey("MedicalRecordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MedicalRecord");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -946,14 +952,14 @@ namespace CleanArc.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CleanArc.Core.Entites.Animal", b =>
+            modelBuilder.Entity("CleanArc.Core.Entities.Animal", b =>
                 {
                     b.Navigation("MedicalRecord");
 
                     b.Navigation("Requests");
                 });
 
-            modelBuilder.Entity("CleanArc.Core.Entites.MedicalRecord", b =>
+            modelBuilder.Entity("CleanArc.Core.Entities.MedicalRecord", b =>
                 {
                     b.Navigation("Vaccinations");
                 });
