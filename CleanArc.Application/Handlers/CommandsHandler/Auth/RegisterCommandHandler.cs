@@ -52,12 +52,20 @@ namespace CleanArc.Application.Handlers.CommandsHandler.Auth
                     var emailBody = EmailTemplates.GetEmailConfirmationBody(confirmationLink, request.Username);
                     var subject = EmailTemplates.GetEmailConfirmationSubject();
 
-                    await _emailService.SendEmailAsync(
-                        request.Email,
-                        subject,
-                        emailBody,
-                        isHtml: true
-                    );
+                    try
+                    {
+                        await _emailService.SendEmailAsync(
+                            request.Email,
+                            subject,
+                            emailBody,
+                            isHtml: true
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the error but don't fail the registration if email fails to send
+                        // e.g. due to missing SMTP password in appsettings
+                    }
                 }
 
                 return new RegisterResponse();
